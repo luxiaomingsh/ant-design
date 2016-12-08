@@ -1,0 +1,273 @@
+exports[`List should render correctly 1`] = `
+<TransferList
+  checkedKeys={
+    Array [
+      "a",
+    ]
+  }
+  dataSource={
+    Array [
+      Object {
+        "key": "a",
+        "title": "a",
+      },
+      Object {
+        "key": "b",
+        "title": "b",
+      },
+      Object {
+        "disabled": true,
+        "key": "c",
+        "title": "c",
+      },
+    ]
+  }
+  lazy={false}
+  prefixCls="ant-transfer-list"
+  render={[Function]}
+  showSearch={false}
+  titleText="">
+  <div
+    className="ant-transfer-list">
+    <div
+      className="ant-transfer-list-header">
+      <Checkbox
+        checked={false}
+        indeterminate={true}
+        onChange={[Function]}
+        prefixCls="ant-checkbox">
+        <label
+          className="ant-checkbox-wrapper">
+          <Checkbox
+            checked={false}
+            className="ant-checkbox-indeterminate"
+            defaultChecked={false}
+            onBlur={[Function]}
+            onChange={[Function]}
+            onFocus={[Function]}
+            prefixCls="ant-checkbox"
+            style={Object {}}
+            type="checkbox">
+            <span
+              className="ant-checkbox-indeterminate ant-checkbox"
+              style={Object {}}>
+              <span
+                className="ant-checkbox-inner" />
+              <input
+                checked={false}
+                className="ant-checkbox-input"
+                onBlur={[Function]}
+                onChange={[Function]}
+                onFocus={[Function]}
+                type="checkbox" />
+            </span>
+          </Checkbox>
+        </label>
+      </Checkbox>
+      <span
+        className="ant-transfer-list-header-selected">
+        <span />
+        <span
+          className="ant-transfer-list-header-title" />
+      </span>
+    </div>
+    <div
+      className="ant-transfer-list-body">
+      <Animate
+        animation={Object {}}
+        className="ant-transfer-list-content"
+        component="ul"
+        onAppear={[Function]}
+        onEnd={[Function]}
+        onEnter={[Function]}
+        onLeave={[Function]}
+        transitionAppear={false}
+        transitionEnter={true}
+        transitionLeave={false}
+        transitionName="">
+        <ul
+          className="ant-transfer-list-content">
+          <AnimateChild
+            animation={Object {}}
+            transitionAppear={false}
+            transitionEnter={true}
+            transitionLeave={false}
+            transitionName="">
+            <Item
+              checked={true}
+              item={
+                Object {
+                  "key": "a",
+                  "title": "a",
+                }
+              }
+              lazy={false}
+              onClick={[Function]}
+              prefixCls="ant-transfer-list"
+              render={[Function]}>
+              <li
+                className="ant-transfer-list-content-item"
+                onClick={[Function]}>
+                <Checkbox
+                  checked={true}
+                  indeterminate={false}
+                  prefixCls="ant-checkbox">
+                  <label
+                    className="ant-checkbox-wrapper">
+                    <Checkbox
+                      checked={true}
+                      className=""
+                      defaultChecked={false}
+                      onBlur={[Function]}
+                      onChange={[Function]}
+                      onFocus={[Function]}
+                      prefixCls="ant-checkbox"
+                      style={Object {}}
+                      type="checkbox">
+                      <span
+                        className="ant-checkbox ant-checkbox-checked ant-checkbox-checked-1"
+                        style={Object {}}>
+                        <span
+                          className="ant-checkbox-inner" />
+                        <input
+                          checked={true}
+                          className="ant-checkbox-input"
+                          onBlur={[Function]}
+                          onChange={[Function]}
+                          onFocus={[Function]}
+                          type="checkbox" />
+                      </span>
+                    </Checkbox>
+                  </label>
+                </Checkbox>
+                <span />
+              </li>
+            </Item>
+          </AnimateChild>
+          <AnimateChild
+            animation={Object {}}
+            transitionAppear={false}
+            transitionEnter={true}
+            transitionLeave={false}
+            transitionName="">
+            <Item
+              checked={false}
+              item={
+                Object {
+                  "key": "b",
+                  "title": "b",
+                }
+              }
+              lazy={false}
+              onClick={[Function]}
+              prefixCls="ant-transfer-list"
+              render={[Function]}>
+              <li
+                className="ant-transfer-list-content-item"
+                onClick={[Function]}>
+                <Checkbox
+                  checked={false}
+                  indeterminate={false}
+                  prefixCls="ant-checkbox">
+                  <label
+                    className="ant-checkbox-wrapper">
+                    <Checkbox
+                      checked={false}
+                      className=""
+                      defaultChecked={false}
+                      onBlur={[Function]}
+                      onChange={[Function]}
+                      onFocus={[Function]}
+                      prefixCls="ant-checkbox"
+                      style={Object {}}
+                      type="checkbox">
+                      <span
+                        className="ant-checkbox"
+                        style={Object {}}>
+                        <span
+                          className="ant-checkbox-inner" />
+                        <input
+                          checked={false}
+                          className="ant-checkbox-input"
+                          onBlur={[Function]}
+                          onChange={[Function]}
+                          onFocus={[Function]}
+                          type="checkbox" />
+                      </span>
+                    </Checkbox>
+                  </label>
+                </Checkbox>
+                <span />
+              </li>
+            </Item>
+          </AnimateChild>
+          <AnimateChild
+            animation={Object {}}
+            transitionAppear={false}
+            transitionEnter={true}
+            transitionLeave={false}
+            transitionName="">
+            <Item
+              checked={false}
+              item={
+                Object {
+                  "disabled": true,
+                  "key": "c",
+                  "title": "c",
+                }
+              }
+              lazy={false}
+              onClick={[Function]}
+              prefixCls="ant-transfer-list"
+              render={[Function]}>
+              <li
+                className="ant-transfer-list-content-item ant-transfer-list-content-item-disabled">
+                <Checkbox
+                  checked={false}
+                  disabled={true}
+                  indeterminate={false}
+                  prefixCls="ant-checkbox">
+                  <label
+                    className="ant-checkbox-wrapper">
+                    <Checkbox
+                      checked={false}
+                      className=""
+                      defaultChecked={false}
+                      disabled={true}
+                      onBlur={[Function]}
+                      onChange={[Function]}
+                      onFocus={[Function]}
+                      prefixCls="ant-checkbox"
+                      style={Object {}}
+                      type="checkbox">
+                      <span
+                        className="ant-checkbox ant-checkbox-disabled"
+                        style={Object {}}>
+                        <span
+                          className="ant-checkbox-inner" />
+                        <input
+                          checked={false}
+                          className="ant-checkbox-input"
+                          disabled={true}
+                          onBlur={[Function]}
+                          onChange={[Function]}
+                          onFocus={[Function]}
+                          type="checkbox" />
+                      </span>
+                    </Checkbox>
+                  </label>
+                </Checkbox>
+                <span />
+              </li>
+            </Item>
+          </AnimateChild>
+        </ul>
+      </Animate>
+      <div
+        className="ant-transfer-list-body-not-found">
+        Not Found
+      </div>
+    </div>
+  </div>
+</TransferList>
+`;

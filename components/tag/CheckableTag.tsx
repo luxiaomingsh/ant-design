@@ -1,31 +1,46 @@
-import React from 'react';
+import * as React from 'react';
 import classNames from 'classnames';
-import splitObject from '../_util/splitObject';
+import { ConfigContext } from '../config-provider';
 
 export interface CheckableTagProps {
   prefixCls?: string;
   className?: string;
+  style?: React.CSSProperties;
   checked: boolean;
-  onChange?: (checked: Boolean) => void;
+  onChange?: (checked: boolean) => void;
+  onClick?: (e: React.MouseEvent<HTMLSpanElement, MouseEvent>) => void;
 }
 
-export default class CheckableTag extends React.Component<CheckableTagProps, any> {
-  handleClick = () => {
-    const { checked, onChange } = this.props;
+const CheckableTag: React.FC<CheckableTagProps> = ({
+  prefixCls: customizePrefixCls,
+  className,
+  checked,
+  onChange,
+  onClick,
+  ...restProps
+}) => {
+  const { getPrefixCls } = React.useContext(ConfigContext);
+
+  const handleClick = (e: React.MouseEvent<HTMLSpanElement, MouseEvent>) => {
     if (onChange) {
       onChange(!checked);
     }
-  }
-  render() {
-    const [{ prefixCls = 'ant-tag', className = '', checked }, restProps ] = splitObject(
-        this.props, ['prefixCls', 'className', 'checked']
-      );
-    const cls = classNames(prefixCls, {
+    if (onClick) {
+      onClick(e);
+    }
+  };
+
+  const prefixCls = getPrefixCls('tag', customizePrefixCls);
+  const cls = classNames(
+    prefixCls,
+    {
       [`${prefixCls}-checkable`]: true,
       [`${prefixCls}-checkable-checked`]: checked,
-    }, className);
+    },
+    className,
+  );
 
-    delete restProps.onChange;
-    return <div {...restProps} className={cls} onClick={this.handleClick} />;
-  }
-}
+  return <span {...restProps} className={cls} onClick={handleClick} />;
+};
+
+export default CheckableTag;

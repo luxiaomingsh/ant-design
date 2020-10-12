@@ -11,18 +11,34 @@ title:
 
 ## en-US
 
-Render addon contents to timepicker panel's bottom.
+Render addon contents to time picker panel's bottom.
 
-````jsx
+```jsx
 import { TimePicker, Button } from 'antd';
 
-ReactDOM.render(
-  <TimePicker
-    addon={panel => (
-      <Button size="small" type="primary" onClick={() => panel.close()}>
-        Ok
-      </Button>
-    )}
-  />
-, mountNode);
-````
+class TimePickerAddonDemo extends React.Component {
+  state = { open: false };
+
+  handleOpenChange = open => {
+    this.setState({ open });
+  };
+
+  handleClose = () => this.setState({ open: false });
+
+  render() {
+    return (
+      <TimePicker
+        open={this.state.open}
+        onOpenChange={this.handleOpenChange}
+        renderExtraFooter={() => (
+          <Button size="small" type="primary" onClick={this.handleClose}>
+            Ok
+          </Button>
+        )}
+      />
+    );
+  }
+}
+
+ReactDOM.render(<TimePickerAddonDemo />, mountNode);
+```

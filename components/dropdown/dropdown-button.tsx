@@ -1,66 +1,110 @@
-import React from 'react';
-import Button from '../button';
-import Icon from '../icon';
-import Dropdown from './dropdown';
-const ButtonGroup = Button.Group;
+import * as React from 'react';
 import classNames from 'classnames';
-import splitObject from '../_util/splitObject';
+import EllipsisOutlined from '@ant-design/icons/EllipsisOutlined';
 
-export interface DropdownButtonProps {
-  type?: 'primary' | 'ghost' | 'dash';
-  onClick?: React.FormEventHandler<any>;
-  trigger?: 'click' | 'hover';
-  overlay: React.ReactNode;
-  visible?: boolean;
+import Button from '../button';
+import { ButtonHTMLType } from '../button/button';
+import { ButtonGroupProps } from '../button/button-group';
+import { ConfigContext } from '../config-provider';
+import Dropdown, { DropDownProps } from './dropdown';
+
+const ButtonGroup = Button.Group;
+
+type DropdownButtonType = 'primary' | 'ghost' | 'dashed';
+
+export interface DropdownButtonProps extends ButtonGroupProps, DropDownProps {
+  type?: DropdownButtonType;
+  htmlType?: ButtonHTMLType;
   disabled?: boolean;
-  onVisibleChange?: (visible: boolean) => void;
-  style?: React.CSSProperties;
-  prefixCls?: string;
-  children: any;
+  onClick?: React.MouseEventHandler<HTMLButtonElement>;
+  icon?: React.ReactNode;
+  href?: string;
+  children?: React.ReactNode;
+  title?: string;
+  buttonsRender?: (buttons: React.ReactNode[]) => React.ReactNode[];
 }
 
-export default class DropdownButton extends React.Component<DropdownButtonProps, any> {
-  static defaultProps = {
-    align: {
-      points: ['tr', 'br'],
-      overlay: {
-        adjustX: 1,
-        adjustY: 1,
-      },
-      offset: [0, 4],
-      targetOffset: [0, 0],
-    },
-    type: 'default',
-    prefixCls: 'ant-dropdown-button',
-  };
+interface DropdownButtonInterface extends React.FC<DropdownButtonProps> {
+  __ANT_BUTTON: boolean;
+}
 
-  render() {
-    const [{ type, overlay, trigger, align, children, className, onClick, prefixCls,
-      disabled, visible, onVisibleChange }, restProps] = splitObject(this.props,
-       ['type', 'overlay', 'trigger', 'align', 'children', 'className', 'onClick',
-         'prefixCls', 'disabled', 'visible', 'onVisibleChange']);
-    const cls = classNames(prefixCls, className);
+const DropdownButton: DropdownButtonInterface = props => {
+  const { getPopupContainer: getContextPopupContainer, getPrefixCls, direction } = React.useContext(
+    ConfigContext,
+  );
 
-    const dropdownProps = {
-      align,
-      overlay,
-      trigger: disabled ? [] : trigger,
-      onVisibleChange,
-    };
+  const {
+    prefixCls: customizePrefixCls,
+    type,
+    disabled,
+    onClick,
+    htmlType,
+    children,
+    className,
+    overlay,
+    trigger,
+    align,
+    visible,
+    onVisibleChange,
+    placement,
+    getPopupContainer,
+    href,
+    icon = <EllipsisOutlined />,
+    title,
+    buttonsRender,
+    ...restProps
+  } = props;
 
-    if ('visible' in this.props) {
-      (dropdownProps as any).visible = visible;
-    }
+  const prefixCls = getPrefixCls('dropdown-button', customizePrefixCls);
+  const dropdownProps = {
+    align,
+    overlay,
+    disabled,
+    trigger: disabled ? [] : trigger,
+    onVisibleChange,
+    getPopupContainer: getPopupContainer || getContextPopupContainer,
+  } as DropDownProps;
 
-    return (
-      <ButtonGroup {...restProps} className={cls}>
-        <Button type={type} onClick={onClick} disabled={disabled}>{children}</Button>
-        <Dropdown {...dropdownProps}>
-          <Button type={type} disabled={disabled}>
-            <Icon type="down" />
-          </Button>
-        </Dropdown>
-      </ButtonGroup>
-    );
+  if ('visible' in props) {
+    dropdownProps.visible = visible;
   }
-}
+
+  if ('placement' in props) {
+    dropdownProps.placement = placement;
+  } else {
+    dropdownProps.placement = direction === 'rtl' ? 'bottomLeft' : 'bottomRight';
+  }
+
+  const leftButton = (
+    <Button
+      type={type}
+      disabled={disabled}
+      onClick={onClick}
+      htmlType={htmlType}
+      href={href}
+      title={title}
+    >
+      {children}
+    </Button>
+  );
+
+  const rightButton = <Button type={type} icon={icon} />;
+
+  const [leftButtonToRender, rightButtonToRender] = buttonsRender!([leftButton, rightButton]);
+
+  return (
+    <ButtonGroup {...restProps} className={classNames(prefixCls, className)}>
+      {leftButtonToRender}
+      <Dropdown {...dropdownProps}>{rightButtonToRender}</Dropdown>
+    </ButtonGroup>
+  );
+};
+
+DropdownButton.__ANT_BUTTON = true;
+
+DropdownButton.defaultProps = {
+  type: 'default' as DropdownButtonType,
+  buttonsRender: (buttons: React.ReactNode[]) => buttons,
+};
+
+export default DropdownButton;

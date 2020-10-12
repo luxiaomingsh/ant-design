@@ -1,39 +1,55 @@
 ---
 category: Components
-type: Navigation
+type: Data Display
 title: Tabs
+cols: 1
+cover: https://gw.alipayobjects.com/zos/antfincdn/lkI2hNEDr2V/Tabs.svg
 ---
 
 Tabs make it easy to switch between different views.
 
 ### When To Use
 
-Ant Design has 3 types Tabs for different situation.
+Ant Design has 3 types of Tabs for different situations.
 
 - Card Tabs: for managing too many closeable views.
 - Normal Tabs: for functional aspects of a page.
-- [RadioButton](/components/radio/#components-radio-demo-radiobutton): for secondary tabs.
+- [Radio.Button](/components/radio/#components-radio-demo-radiobutton): for secondary tabs.
 
 ## API
 
 ### Tabs
 
-| Property     | Description           | Type     | Default      |
-|--------------|-----------------------|----------|--------------|
-| activeKey    | Current TabPane's key| string   | _             |
-| defaultActiveKey | Default actived tabPanel's key, if activeKey is not setted. | - |
-| onChange     | Callback when tab is switched | Function | - |
-| onTabClick   | Callback when tab is clicked | Function | - |
-| tabBarExtraContent | Extra element in tab bar | React.ReactNode | - |
-| type         | Basic style of tabs. Options: line, card & editable-card | string | line |
-| size         | Tab bar size. Options: default, small. Only works while `type="line"`. | string | default |
-| tabPosition  | Position of tabs. Options: top, right, bottom & left | string | top |
-| onEdit       | Callback when tab is added or removed, which is executing when set type as editable-card | (targetKey, action): void | - |
-| hideAdd      | Hide plus icon or not, which is effective when set type as editable-card | boolean | false |
-| animated | Whether to change tabs with animation, this property only works with `tabPosition=top|bottom` | boolean | true |
+| Property | Description | Type | Default | Version |
+| --- | --- | --- | --- | --- |
+| addIcon | Customize add icon | ReactNode | - | 4.4.0 |
+| activeKey | Current TabPane's key | string | - |  |
+| animated | Whether to change tabs with animation. Only works while `tabPosition="top" | "bottom"` | boolean \| {inkBar: boolean, tabPane: boolean} | false |  |
+| renderTabBar | Replace the TabBar | (props: DefaultTabBarProps, DefaultTabBar: React.ComponentClass) => React.ReactElement | - |  |
+| defaultActiveKey | Initial active TabPane's key, if `activeKey` is not set | string | - |  |
+| hideAdd | Hide plus icon or not. Only works while `type="editable-card"` | boolean | false |  |
+| size | Preset tab bar size | `large` \| `default` \| `small` | `default` |  |
+| centered | Centers tabs | boolean | false | 4.4.0 |
+| tabBarExtraContent | Extra content in tab bar | ReactNode \| {left?: ReactNode, right?: ReactNode} | - |  |
+| tabBarGutter | The gap between tabs | number | - |  |
+| tabBarStyle | Tab bar style object | object | - |  |
+| tabPosition | Position of tabs | `top` \| `right` \| `bottom` \| `left` | `top` |  |
+| type | Basic style of tabs | `line` \| `card` \| `editable-card` | `line` |  |
+| onChange | Callback executed when active tab is changed | function(activeKey) {} | - |  |
+| onEdit | Callback executed when tab is added or removed. Only works while `type="editable-card"` | (targetKey, action) => void | - |  |
+| onTabClick | Callback executed when tab is clicked | function(key: string, event: MouseEvent) | - |  |
+| onTabScroll | Trigger when tab scroll | function({ direction: `left` \| `right` \| `top` \| `bottom` }) | - | 4.3.0 |
+| keyboard | Whether to turn on keyboard navigation | boolean | true |  |
+
+More option at [rc-tabs option](https://github.com/react-component/tabs#tabs)
 
 ### Tabs.TabPane
-| Property     | Description           | Type     | Default      |
-|--------------|-----------------------|----------|--------------|
-| key          | TabPane's key         | string   | _            |
-| tab          | Show text in TabPane's head | React.ReactNode | _ |
+
+| Property | Description | Type | Default |
+| --- | --- | --- | --- |
+| forceRender | Forced render of content in tabs, not lazy render after clicking on tabs | boolean | false |
+| key | TabPane's key | string | - |
+| tab | Show text in TabPane's head | ReactNode | - |
+| closeIcon | Customize close icon in TabPane's head. Only works while `type="editable-card"` | ReactNode | - |
+
+More option at [rc-tabs option](https://github.com/react-component/tabs#tabpane)

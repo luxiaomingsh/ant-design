@@ -1,62 +1,55 @@
-import React from 'react';
-import Modal from './Modal';
-import confirm from './confirm';
-import assign from 'object-assign';
+import OriginModal, { ModalFuncProps, destroyFns } from './Modal';
+import confirm, {
+  withWarn,
+  withInfo,
+  withSuccess,
+  withError,
+  withConfirm,
+  ModalStaticFunctions,
+  globalConfig,
+} from './confirm';
 
-export interface ModalFuncProps {
-  visible?: boolean;
-  title?: React.ReactNode | string;
-  content?: React.ReactNode | string;
-  onOk?: (func: Function) => any;
-  onCancel?: (func: Function) => any;
-  width?: string | number;
-  iconClassName?: string;
-  okText?: string;
-  cancelText?: string;
-  iconType?: string;
+export { ActionButtonProps } from './ActionButton';
+export { ModalProps, ModalFuncProps } from './Modal';
+
+function modalWarn(props: ModalFuncProps) {
+  return confirm(withWarn(props));
 }
-Modal.info = function (props: ModalFuncProps) {
-  const config = assign({}, {
-    type: 'info',
-    iconType: 'info-circle',
-    okCancel: false,
-  }, props);
-  return confirm(config);
+
+type ModalType = typeof OriginModal &
+  ModalStaticFunctions & { destroyAll: () => void; config: typeof globalConfig };
+
+const Modal = OriginModal as ModalType;
+
+Modal.info = function infoFn(props: ModalFuncProps) {
+  return confirm(withInfo(props));
 };
 
-Modal.success = function (props: ModalFuncProps) {
-  const config = assign({}, {
-    type: 'success',
-    iconType: 'check-circle',
-    okCancel: false,
-  }, props);
-  return confirm(config);
+Modal.success = function successFn(props: ModalFuncProps) {
+  return confirm(withSuccess(props));
 };
 
-Modal.error = function (props: ModalFuncProps) {
-  const config = assign({}, {
-    type: 'error',
-    iconType: 'cross-circle',
-    okCancel: false,
-  }, props);
-  return confirm(config);
+Modal.error = function errorFn(props: ModalFuncProps) {
+  return confirm(withError(props));
 };
 
-Modal.warning = Modal.warn = function (props: ModalFuncProps) {
-  const config = assign({}, {
-    type: 'warning',
-    iconType: 'exclamation-circle',
-    okCancel: false,
-  }, props);
-  return confirm(config);
+Modal.warning = modalWarn;
+
+Modal.warn = modalWarn;
+
+Modal.confirm = function confirmFn(props: ModalFuncProps) {
+  return confirm(withConfirm(props));
 };
 
-Modal.confirm = function (props: ModalFuncProps) {
-  const config = assign({}, {
-    type: 'confirm',
-    okCancel: true,
-  }, props);
-  return confirm(config);
+Modal.destroyAll = function destroyAllFn() {
+  while (destroyFns.length) {
+    const close = destroyFns.pop();
+    if (close) {
+      close();
+    }
+  }
 };
+
+Modal.config = globalConfig;
 
 export default Modal;

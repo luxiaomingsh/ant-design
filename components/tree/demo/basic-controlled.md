@@ -2,7 +2,7 @@
 order: 1
 title:
   zh-CN: 受控操作示例
-  en-US: basic controlled example
+  en-US: Controlled Tree
 ---
 
 ## zh-CN
@@ -11,92 +11,94 @@ title:
 
 ## en-US
 
-basic controlled example
+Controlled mode lets parent nodes reflect the status of child nodes more intelligently.
 
-````jsx
+```tsx
+import React, { useState } from 'react';
 import { Tree } from 'antd';
-const TreeNode = Tree.TreeNode;
 
-const x = 3;
-const y = 2;
-const z = 1;
-const gData = [];
-
-const generateData = (_level, _preKey, _tns) => {
-  const preKey = _preKey || '0';
-  const tns = _tns || gData;
-
-  const children = [];
-  for (let i = 0; i < x; i++) {
-    const key = `${preKey}-${i}`;
-    tns.push({ title: key, key });
-    if (i < y) {
-      children.push(key);
-    }
-  }
-  if (_level < 0) {
-    return tns;
-  }
-  const level = _level - 1;
-  children.forEach((key, index) => {
-    tns[index].children = [];
-    return generateData(level, key, tns[index].children);
-  });
-};
-generateData(z);
-
-const Demo = React.createClass({
-  getInitialState() {
-    return {
-      expandedKeys: ['0-0-0', '0-0-1'],
-      autoExpandParent: true,
-      checkedKeys: ['0-0-0'],
-      selectedKeys: [],
-    };
+const treeData = [
+  {
+    title: '0-0',
+    key: '0-0',
+    children: [
+      {
+        title: '0-0-0',
+        key: '0-0-0',
+        children: [
+          { title: '0-0-0-0', key: '0-0-0-0' },
+          { title: '0-0-0-1', key: '0-0-0-1' },
+          { title: '0-0-0-2', key: '0-0-0-2' },
+        ],
+      },
+      {
+        title: '0-0-1',
+        key: '0-0-1',
+        children: [
+          { title: '0-0-1-0', key: '0-0-1-0' },
+          { title: '0-0-1-1', key: '0-0-1-1' },
+          { title: '0-0-1-2', key: '0-0-1-2' },
+        ],
+      },
+      {
+        title: '0-0-2',
+        key: '0-0-2',
+      },
+    ],
   },
-  onExpand(expandedKeys) {
-    console.log('onExpand', arguments);
+  {
+    title: '0-1',
+    key: '0-1',
+    children: [
+      { title: '0-1-0-0', key: '0-1-0-0' },
+      { title: '0-1-0-1', key: '0-1-0-1' },
+      { title: '0-1-0-2', key: '0-1-0-2' },
+    ],
+  },
+  {
+    title: '0-2',
+    key: '0-2',
+  },
+];
+
+const Demo = () => {
+  const [expandedKeys, setExpandedKeys] = useState<string[]>(['0-0-0', '0-0-1']);
+  const [checkedKeys, setCheckedKeys] = useState<string[]>(['0-0-0']);
+  const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
+  const [autoExpandParent, setAutoExpandParent] = useState<boolean>(true);
+
+  const onExpand = expandedKeys => {
+    console.log('onExpand', expandedKeys);
     // if not set autoExpandParent to false, if children expanded, parent can not collapse.
     // or, you can remove all expanded children keys.
-    this.setState({
-      expandedKeys,
-      autoExpandParent: false,
-    });
-  },
-  onCheck(checkedKeys) {
-    this.setState({
-      checkedKeys,
-      selectedKeys: ['0-3', '0-4'],
-    });
-  },
-  onSelect(selectedKeys, info) {
+    setExpandedKeys(expandedKeys);
+    setAutoExpandParent(false);
+  };
+
+  const onCheck = checkedKeys => {
+    console.log('onCheck', checkedKeys);
+    setCheckedKeys(checkedKeys);
+  };
+
+  const onSelect = (selectedKeys, info) => {
     console.log('onSelect', info);
-    this.setState({ selectedKeys });
-  },
-  render() {
-    const loop = data => data.map((item) => {
-      if (item.children) {
-        return (
-          <TreeNode key={item.key} title={item.key} disableCheckbox={item.key === '0-0-0'}>
-            {loop(item.children)}
-          </TreeNode>
-        );
-      }
-      return <TreeNode key={item.key} title={item.key} />;
-    });
-    return (
-      <Tree
-        checkable
-        onExpand={this.onExpand} expandedKeys={this.state.expandedKeys}
-        autoExpandParent={this.state.autoExpandParent}
-        onCheck={this.onCheck} checkedKeys={this.state.checkedKeys}
-        onSelect={this.onSelect} selectedKeys={this.state.selectedKeys}
-      >
-        {loop(gData)}
-      </Tree>
-    );
-  },
-});
+    setSelectedKeys(selectedKeys);
+  };
+
+  return (
+    <Tree
+      checkable
+      onExpand={onExpand}
+      expandedKeys={expandedKeys}
+      autoExpandParent={autoExpandParent}
+      onCheck={onCheck}
+      checkedKeys={checkedKeys}
+      onSelect={onSelect}
+      selectedKeys={selectedKeys}
+      treeData={treeData}
+    />
+  );
+};
 
 ReactDOM.render(<Demo />, mountNode);
-````
+```

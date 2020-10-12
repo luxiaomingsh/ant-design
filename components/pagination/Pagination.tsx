@@ -1,87 +1,144 @@
-import React from 'react';
+import * as React from 'react';
 import RcPagination from 'rc-pagination';
-import Select from '../select';
+import enUS from 'rc-pagination/lib/locale/en_US';
+import classNames from 'classnames';
+import LeftOutlined from '@ant-design/icons/LeftOutlined';
+import RightOutlined from '@ant-design/icons/RightOutlined';
+import DoubleLeftOutlined from '@ant-design/icons/DoubleLeftOutlined';
+import DoubleRightOutlined from '@ant-design/icons/DoubleRightOutlined';
+
 import MiniSelect from './MiniSelect';
-import zhCN from './locale/zh_CN';
+import Select from '../select';
+import LocaleReceiver from '../locale-provider/LocaleReceiver';
+import { ConfigContext } from '../config-provider';
+import useBreakpoint from '../grid/hooks/useBreakpoint';
 
 export interface PaginationProps {
-  /** 当前页数*/
-  current?: number;
-  /** 默认的当前页数*/
+  total?: number;
   defaultCurrent?: number;
-  /** 数据总数*/
-  total: number;
-  /** 初始的每页条数*/
+  disabled?: boolean;
+  current?: number;
   defaultPageSize?: number;
-  /** 每页条数*/
   pageSize?: number;
-  /** 页码改变的回调，参数是改变后的页码*/
-  onChange?: (page: number) => void;
-  /** 是否可以改变 pageSize */
+  onChange?: (page: number, pageSize?: number) => void;
+  hideOnSinglePage?: boolean;
   showSizeChanger?: boolean;
-  /** 指定每页可以显示多少条*/
-  pageSizeOptions?: Array<string>;
-  /** pageSize 变化的回调  */
+  pageSizeOptions?: string[];
   onShowSizeChange?: (current: number, size: number) => void;
-  /** 是否可以快速跳转至某页*/
-  showQuickJumper?: boolean;
-  /** 当为「small」时，是小尺寸分页 */
-  size?: string;
-  /** 当添加该属性时，显示为简单分页*/
-  simple?: Object;
-  /** 用于显示总共有多少条数据*/
-  showTotal?: (total: number) => React.ReactNode;
+  showQuickJumper?: boolean | { goButton?: React.ReactNode };
+  showTitle?: boolean;
+  showTotal?: (total: number, range: [number, number]) => React.ReactNode;
+  size?: 'default' | 'small';
+  responsive?: boolean;
+  simple?: boolean;
   style?: React.CSSProperties;
-  className?: string;
   locale?: Object;
+  className?: string;
   prefixCls?: string;
   selectPrefixCls?: string;
+  itemRender?: (
+    page: number,
+    type: 'page' | 'prev' | 'next' | 'jump-prev' | 'jump-next',
+    originalElement: React.ReactElement<HTMLElement>,
+  ) => React.ReactNode;
+  role?: string;
+  showLessItems?: boolean;
 }
 
-export interface PaginationContext {
-  antLocale?: {
-    Pagination?: any,
-  };
+export type PaginationPosition = 'top' | 'bottom' | 'both';
+
+export interface PaginationConfig extends PaginationProps {
+  position?: PaginationPosition;
 }
 
-export default class Pagination extends React.Component<PaginationProps, any> {
-  static defaultProps = {
-    locale: zhCN,
-    className: '',
-    prefixCls: 'ant-pagination',
-    selectPrefixCls: 'ant-select',
+export type PaginationLocale = any;
+
+const Pagination: React.FC<PaginationProps> = ({
+  prefixCls: customizePrefixCls,
+  selectPrefixCls: customizeSelectPrefixCls,
+  className,
+  size,
+  locale: customLocale,
+  ...restProps
+}) => {
+  const { xs } = useBreakpoint();
+
+  const { getPrefixCls, direction } = React.useContext(ConfigContext);
+  const prefixCls = getPrefixCls('pagination', customizePrefixCls);
+
+  const getIconsProps = () => {
+    const ellipsis = <span className={`${prefixCls}-item-ellipsis`}>•••</span>;
+    let prevIcon = (
+      <button className={`${prefixCls}-item-link`} type="button" tabIndex={-1}>
+        <LeftOutlined />
+      </button>
+    );
+    let nextIcon = (
+      <button className={`${prefixCls}-item-link`} type="button" tabIndex={-1}>
+        <RightOutlined />
+      </button>
+    );
+    let jumpPrevIcon = (
+      <a className={`${prefixCls}-item-link`}>
+        {/* You can use transition effects in the container :) */}
+        <div className={`${prefixCls}-item-container`}>
+          <DoubleLeftOutlined className={`${prefixCls}-item-link-icon`} />
+          {ellipsis}
+        </div>
+      </a>
+    );
+    let jumpNextIcon = (
+      <a className={`${prefixCls}-item-link`}>
+        {/* You can use transition effects in the container :) */}
+        <div className={`${prefixCls}-item-container`}>
+          <DoubleRightOutlined className={`${prefixCls}-item-link-icon`} />
+          {ellipsis}
+        </div>
+      </a>
+    );
+    // change arrows direction in right-to-left direction
+    if (direction === 'rtl') {
+      [prevIcon, nextIcon] = [nextIcon, prevIcon];
+      [jumpPrevIcon, jumpNextIcon] = [jumpNextIcon, jumpPrevIcon];
+    }
+    return {
+      prevIcon,
+      nextIcon,
+      jumpPrevIcon,
+      jumpNextIcon,
+    };
   };
 
-  static contextTypes = {
-    antLocale: React.PropTypes.object,
-  };
-
-  context: PaginationContext;
-
-  render() {
-    let className = this.props.className;
-    let selectComponentClass = Select as React.ReactNode;
-
-    let locale;
-    if (this.context.antLocale && this.context.antLocale.Pagination) {
-      locale = this.context.antLocale.Pagination;
-    } else {
-      locale = this.props.locale;
-    }
-
-    if (this.props.size === 'small') {
-      className += ' mini';
-      selectComponentClass = MiniSelect;
-    }
+  const renderPagination = (contextLocale: PaginationLocale) => {
+    const locale = { ...contextLocale, ...customLocale };
+    const isSmall = size === 'small' || !!(xs && !size && restProps.responsive);
+    const selectPrefixCls = getPrefixCls('select', customizeSelectPrefixCls);
+    const extendedClassName = classNames(
+      {
+        mini: isSmall,
+        [`${prefixCls}-rtl`]: direction === 'rtl',
+      },
+      className,
+    );
 
     return (
       <RcPagination
-        selectComponentClass={selectComponentClass}
-        selectPrefixCls={this.props.selectPrefixCls}
-        {...this.props}
+        {...restProps}
+        prefixCls={prefixCls}
+        selectPrefixCls={selectPrefixCls}
+        {...getIconsProps()}
+        className={extendedClassName}
+        selectComponentClass={isSmall ? MiniSelect : Select}
         locale={locale}
-        className={className}
       />
     );
-  }
-}
+  };
+
+  return (
+    <LocaleReceiver componentName="Pagination" defaultLocale={enUS}>
+      {renderPagination}
+    </LocaleReceiver>
+  );
+};
+
+export default Pagination;

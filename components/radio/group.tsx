@@ -1,113 +1,124 @@
-import React from 'react';
+import * as React from 'react';
 import classNames from 'classnames';
+import useMergedState from 'rc-util/lib/hooks/useMergedState';
 import Radio from './radio';
-import RadioButton from './radioButton';
-import PureRenderMixin from 'rc-util/lib/PureRenderMixin';
-import assign from 'object-assign';
+import { RadioGroupProps, RadioChangeEvent, RadioGroupButtonStyle } from './interface';
+import { ConfigContext } from '../config-provider';
+import SizeContext from '../config-provider/SizeContext';
+import { RadioGroupContextProvider } from './context';
 
-function getCheckedValue(children) {
-  let value = null;
-  let matched = false;
-  React.Children.forEach(children, (radio: any) => {
-    if (radio && radio.props && radio.props.checked) {
-      value = radio.props.value;
-      matched = true;
-    }
+const RadioGroup = React.forwardRef<HTMLDivElement, RadioGroupProps>((props, ref) => {
+  const { getPrefixCls, direction } = React.useContext(ConfigContext);
+  const size = React.useContext(SizeContext);
+
+  const [value, setValue] = useMergedState(props.defaultValue, {
+    value: props.value,
   });
-  return matched ? { value } : undefined;
-}
 
-export interface RadioGroupProps {
-  prefixCls?: string;
-  className?: string;
-  /** 选项变化时的回调函数*/
-  onChange?: React.FormEventHandler<any>;
-  /** 用于设置当前选中的值*/
-  value?: string | number;
-  /** 默认选中的值*/
-  defaultValue?: string | number;
-  /**  大小，只对按钮样式生效*/
-  size?: 'large' | 'default' | 'small';
-  style?: React.CSSProperties;
-  disabled?: boolean;
-  onMouseEnter?: React.FormEventHandler<any>;
-  onMouseLeave?: React.FormEventHandler<any>;
-}
-
-export default class RadioGroup extends React.Component<RadioGroupProps, any> {
-  static defaultProps = {
-    disabled: false,
-  };
-  constructor(props) {
-    super(props);
-    let value;
-    if ('value' in props) {
-      value = props.value;
-    } else if ('defaultValue' in props) {
-      value = props.defaultValue;
-    } else {
-      const checkedValue = getCheckedValue(props.children);
-      value = checkedValue && checkedValue.value;
+  const onRadioChange = (ev: RadioChangeEvent) => {
+    const lastValue = value;
+    const val = ev.target.value;
+    if (!('value' in props)) {
+      setValue(val);
     }
-    this.state = {
-      value,
-    };
-  }
-  componentWillReceiveProps(nextProps) {
-    if ('value' in nextProps) {
-      this.setState({
-        value: nextProps.value,
-      });
-    } else {
-      const checkedValue = getCheckedValue(nextProps.children);
-      if (checkedValue) {
-        this.setState({
-          value: checkedValue.value,
-        });
-      }
-    }
-  }
-  shouldComponentUpdate(...args) {
-    return PureRenderMixin.shouldComponentUpdate.apply(this, args);
-  }
-  onRadioChange = (ev) => {
-    if (!('value' in this.props)) {
-      this.setState({
-        value: ev.target.value,
-      });
-    }
-
-    const onChange = this.props.onChange;
-    if (onChange) {
+    const { onChange } = props;
+    if (onChange && val !== lastValue) {
       onChange(ev);
     }
-  }
-  render() {
-    const props = this.props;
-    const children = !props.children ? [] : React.Children.map(props.children, (radio: any) => {
-      if (radio && (radio.type === Radio || radio.type === RadioButton) && radio.props) {
-        return React.cloneElement(radio, assign({}, radio.props, {
-          onChange: this.onRadioChange,
-          checked: this.state.value === radio.props.value,
-          disabled: radio.props.disabled || this.props.disabled,
-        }));
-      }
-      return radio;
-    });
+  };
 
-    const { prefixCls = 'ant-radio-group', className = '' } = props;
-    const classString = classNames(prefixCls, {
-      [`${prefixCls}-${props.size}`]: props.size,
-    }, className);
+  const renderGroup = () => {
+    const {
+      prefixCls: customizePrefixCls,
+      className = '',
+      options,
+      optionType,
+      buttonStyle,
+      disabled,
+      children,
+      size: customizeSize,
+      style,
+      id,
+      onMouseEnter,
+      onMouseLeave,
+    } = props;
+    const prefixCls = getPrefixCls('radio', customizePrefixCls);
+    const groupPrefixCls = `${prefixCls}-group`;
+    let childrenToRender = children;
+    // 如果存在 options, 优先使用
+    if (options && options.length > 0) {
+      const optionsPrefixCls = optionType === 'button' ? `${prefixCls}-button` : prefixCls;
+      childrenToRender = options.map(option => {
+        if (typeof option === 'string') {
+          // 此处类型自动推导为 string
+          return (
+            <Radio
+              key={option}
+              prefixCls={optionsPrefixCls}
+              disabled={disabled}
+              value={option}
+              checked={value === option}
+            >
+              {option}
+            </Radio>
+          );
+        }
+        // 此处类型自动推导为 { label: string value: string }
+        return (
+          <Radio
+            key={`radio-group-value-options-${option.value}`}
+            prefixCls={optionsPrefixCls}
+            disabled={option.disabled || disabled}
+            value={option.value}
+            checked={value === option.value}
+            style={option.style}
+          >
+            {option.label}
+          </Radio>
+        );
+      });
+    }
+
+    const mergedSize = customizeSize || size;
+    const classString = classNames(
+      groupPrefixCls,
+      `${groupPrefixCls}-${buttonStyle}`,
+      {
+        [`${groupPrefixCls}-${mergedSize}`]: mergedSize,
+        [`${groupPrefixCls}-rtl`]: direction === 'rtl',
+      },
+      className,
+    );
     return (
       <div
         className={classString}
-        style={props.style}
-        onMouseEnter={props.onMouseEnter}
-        onMouseLeave={props.onMouseLeave}
+        style={style}
+        onMouseEnter={onMouseEnter}
+        onMouseLeave={onMouseLeave}
+        id={id}
+        ref={ref}
       >
-        {children}
+        {childrenToRender}
       </div>
     );
-  }
-}
+  };
+
+  return (
+    <RadioGroupContextProvider
+      value={{
+        onChange: onRadioChange,
+        value,
+        disabled: props.disabled,
+        name: props.name,
+      }}
+    >
+      {renderGroup()}
+    </RadioGroupContextProvider>
+  );
+});
+
+RadioGroup.defaultProps = {
+  buttonStyle: 'outline' as RadioGroupButtonStyle,
+};
+
+export default React.memo(RadioGroup);

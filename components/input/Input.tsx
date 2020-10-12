@@ -1,113 +1,286 @@
-import React from 'react';
-import { Component, PropTypes } from 'react';
+import * as React from 'react';
 import classNames from 'classnames';
-import calculateNodeHeight from './calculateNodeHeight';
-import assign from 'object-assign';
 import omit from 'omit.js';
+import Group from './Group';
+import Search from './Search';
+import TextArea from './TextArea';
+import Password from './Password';
+import { Omit, LiteralUnion } from '../_util/type';
+import ClearableLabeledInput, { hasPrefixSuffix } from './ClearableLabeledInput';
+import { ConfigConsumer, ConfigConsumerProps } from '../config-provider';
+import SizeContext, { SizeType } from '../config-provider/SizeContext';
+import devWarning from '../_util/devWarning';
 
-function fixControlledValue(value) {
+export interface InputProps
+  extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'size' | 'prefix' | 'type'> {
+  prefixCls?: string;
+  size?: SizeType;
+  // ref: https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input#%3Cinput%3E_types
+  type?: LiteralUnion<
+    | 'button'
+    | 'checkbox'
+    | 'color'
+    | 'date'
+    | 'datetime-local'
+    | 'email'
+    | 'file'
+    | 'hidden'
+    | 'image'
+    | 'month'
+    | 'number'
+    | 'password'
+    | 'radio'
+    | 'range'
+    | 'reset'
+    | 'search'
+    | 'submit'
+    | 'tel'
+    | 'text'
+    | 'time'
+    | 'url'
+    | 'week',
+    string
+  >;
+  onPressEnter?: React.KeyboardEventHandler<HTMLInputElement>;
+  addonBefore?: React.ReactNode;
+  addonAfter?: React.ReactNode;
+  prefix?: React.ReactNode;
+  suffix?: React.ReactNode;
+  allowClear?: boolean;
+  bordered?: boolean;
+}
+
+export function fixControlledValue<T>(value: T) {
   if (typeof value === 'undefined' || value === null) {
     return '';
   }
   return value;
 }
 
-function onNextFrame(cb) {
-  if (window.requestAnimationFrame) {
-    return window.requestAnimationFrame(cb);
+export function resolveOnChange(
+  target: HTMLInputElement | HTMLTextAreaElement,
+  e:
+    | React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>
+    | React.MouseEvent<HTMLElement, MouseEvent>,
+  onChange?: (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void,
+) {
+  if (onChange) {
+    let event = e;
+    if (e.type === 'click') {
+      // click clear icon
+      event = Object.create(e);
+      event.target = target;
+      event.currentTarget = target;
+      const originalInputValue = target.value;
+      // change target ref value cause e.target.value should be '' when clear input
+      target.value = '';
+      onChange(event as React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>);
+      // reset target ref value
+      target.value = originalInputValue;
+      return;
+    }
+    onChange(event as React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>);
   }
-  return window.setTimeout(cb, 1);
 }
 
-function clearNextFrameAction(nextFrameId) {
-  if (window.cancelAnimationFrame) {
-    window.cancelAnimationFrame(nextFrameId);
-  } else {
-    window.clearTimeout(nextFrameId);
-  }
+export function getInputClassName(
+  prefixCls: string,
+  bordered: boolean,
+  size?: SizeType,
+  disabled?: boolean,
+  direction?: any,
+) {
+  return classNames(prefixCls, {
+    [`${prefixCls}-sm`]: size === 'small',
+    [`${prefixCls}-lg`]: size === 'large',
+    [`${prefixCls}-disabled`]: disabled,
+    [`${prefixCls}-rtl`]: direction === 'rtl',
+    [`${prefixCls}-borderless`]: !bordered,
+  });
 }
 
-export interface AutoSizeType {
-  minRows?: number;
-  maxRows?: number;
-};
-
-export interface InputProps {
-  prefixCls?: string;
-  className?: string;
-  type?: string;
-  id?: number | string;
-  value?: any;
-  defaultValue?: any;
-  placeholder?: string;
-  size?: 'large' | 'default' | 'small';
-  disabled?: boolean;
-  readOnly?: boolean;
-  addonBefore?: React.ReactNode;
-  addonAfter?: React.ReactNode;
-  onPressEnter?: React.FormEventHandler<any>;
-  onKeyDown?: React.FormEventHandler<any>;
-  onChange?: React.FormEventHandler<any>;
-  onClick?: React.FormEventHandler<any>;
-  onBlur?: React.FormEventHandler<any>;
-  autosize?: boolean | AutoSizeType;
-  autoComplete?: 'on' | 'off';
-  style?: React.CSSProperties;
+export interface InputState {
+  value: any;
+  focused: boolean;
+  /** `value` from prev props */
+  prevValue: any;
 }
 
-export default class Input extends Component<InputProps, any> {
-  static Group: any;
-  static Search: any;
+class Input extends React.Component<InputProps, InputState> {
+  static Group: typeof Group;
+
+  static Search: typeof Search;
+
+  static TextArea: typeof TextArea;
+
+  static Password: typeof Password;
+
   static defaultProps = {
-    disabled: false,
-    prefixCls: 'ant-input',
     type: 'text',
-    autosize: false,
   };
 
-  static propTypes = {
-    type: PropTypes.string,
-    id: PropTypes.oneOfType([
-      PropTypes.string,
-      PropTypes.number,
-    ]),
-    size: PropTypes.oneOf(['small', 'default', 'large']),
-    disabled: PropTypes.bool,
-    value: PropTypes.any,
-    defaultValue: PropTypes.any,
-    className: PropTypes.string,
-    addonBefore: PropTypes.node,
-    addonAfter: PropTypes.node,
-    prefixCls: PropTypes.string,
-    autosize: PropTypes.oneOfType([PropTypes.bool, PropTypes.object]),
-    onPressEnter: PropTypes.func,
-    onKeyDown: PropTypes.func,
-  };
+  input: HTMLInputElement;
 
-  nextFrameActionId: number;
-  refs: {
-    input: any;
-  };
+  clearableInput: ClearableLabeledInput;
 
-  state = {
-    textareaStyles: null,
-  };
+  removePasswordTimeout: number;
+
+  direction: any = 'ltr';
+
+  constructor(props: InputProps) {
+    super(props);
+    const value = typeof props.value === 'undefined' ? props.defaultValue : props.value;
+    this.state = {
+      value,
+      focused: false,
+      // eslint-disable-next-line react/no-unused-state
+      prevValue: props.value,
+    };
+  }
+
+  static getDerivedStateFromProps(nextProps: InputProps, { prevValue }: InputState) {
+    const newState: Partial<InputState> = { prevValue: nextProps.value };
+    if (nextProps.value !== undefined || prevValue !== nextProps.value) {
+      newState.value = nextProps.value;
+    }
+    return newState;
+  }
 
   componentDidMount() {
-    this.resizeTextarea();
+    this.clearPasswordValueAttribute();
   }
 
-  componentWillReceiveProps(nextProps) {
-    // Re-render with the new content then recalculate the height as required.
-    if (this.props.value !== nextProps.value) {
-      if (this.nextFrameActionId) {
-        clearNextFrameAction(this.nextFrameActionId);
-      }
-      this.nextFrameActionId = onNextFrame(this.resizeTextarea);
+  // Since polyfill `getSnapshotBeforeUpdate` need work with `componentDidUpdate`.
+  // We keep an empty function here.
+  componentDidUpdate() {}
+
+  getSnapshotBeforeUpdate(prevProps: InputProps) {
+    if (hasPrefixSuffix(prevProps) !== hasPrefixSuffix(this.props)) {
+      devWarning(
+        this.input !== document.activeElement,
+        'Input',
+        `When Input is focused, dynamic add or remove prefix / suffix will make it lose focus caused by dom structure change. Read more: https://ant.design/components/input/#FAQ`,
+      );
+    }
+    return null;
+  }
+
+  componentWillUnmount() {
+    if (this.removePasswordTimeout) {
+      clearTimeout(this.removePasswordTimeout);
     }
   }
 
-  handleKeyDown = (e) => {
+  focus = () => {
+    this.input.focus();
+  };
+
+  blur() {
+    this.input.blur();
+  }
+
+  select() {
+    this.input.select();
+  }
+
+  saveClearableInput = (input: ClearableLabeledInput) => {
+    this.clearableInput = input;
+  };
+
+  saveInput = (input: HTMLInputElement) => {
+    this.input = input;
+  };
+
+  onFocus: React.FocusEventHandler<HTMLInputElement> = e => {
+    const { onFocus } = this.props;
+    this.setState({ focused: true }, this.clearPasswordValueAttribute);
+    if (onFocus) {
+      onFocus(e);
+    }
+  };
+
+  onBlur: React.FocusEventHandler<HTMLInputElement> = e => {
+    const { onBlur } = this.props;
+    this.setState({ focused: false }, this.clearPasswordValueAttribute);
+    if (onBlur) {
+      onBlur(e);
+    }
+  };
+
+  setValue(value: string, callback?: () => void) {
+    if (this.props.value === undefined) {
+      this.setState({ value }, callback);
+    }
+  }
+
+  handleReset = (e: React.MouseEvent<HTMLElement, MouseEvent>) => {
+    this.setValue('', () => {
+      this.focus();
+    });
+    resolveOnChange(this.input, e, this.props.onChange);
+  };
+
+  renderInput = (
+    prefixCls: string,
+    size: SizeType | undefined,
+    bordered: boolean,
+    input: ConfigConsumerProps['input'] = {},
+  ) => {
+    const { className, addonBefore, addonAfter, size: customizeSize, disabled } = this.props;
+    // Fix https://fb.me/react-unknown-prop
+    const otherProps = omit(this.props, [
+      'prefixCls',
+      'onPressEnter',
+      'addonBefore',
+      'addonAfter',
+      'prefix',
+      'suffix',
+      'allowClear',
+      // Input elements must be either controlled or uncontrolled,
+      // specify either the value prop, or the defaultValue prop, but not both.
+      'defaultValue',
+      'size',
+      'inputType',
+      'bordered',
+    ]);
+    return (
+      <input
+        autoComplete={input.autoComplete}
+        {...otherProps}
+        onChange={this.handleChange}
+        onFocus={this.onFocus}
+        onBlur={this.onBlur}
+        onKeyDown={this.handleKeyDown}
+        className={classNames(
+          getInputClassName(prefixCls, bordered, customizeSize || size, disabled, this.direction),
+          {
+            [className!]: className && !addonBefore && !addonAfter,
+          },
+        )}
+        ref={this.saveInput}
+      />
+    );
+  };
+
+  clearPasswordValueAttribute = () => {
+    // https://github.com/ant-design/ant-design/issues/20541
+    this.removePasswordTimeout = setTimeout(() => {
+      if (
+        this.input &&
+        this.input.getAttribute('type') === 'password' &&
+        this.input.hasAttribute('value')
+      ) {
+        this.input.removeAttribute('value');
+      }
+    });
+  };
+
+  handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    this.setValue(e.target.value, this.clearPasswordValueAttribute);
+    resolveOnChange(this.input, e, this.props.onChange);
+  };
+
+  handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     const { onPressEnter, onKeyDown } = this.props;
     if (e.keyCode === 13 && onPressEnter) {
       onPressEnter(e);
@@ -115,122 +288,39 @@ export default class Input extends Component<InputProps, any> {
     if (onKeyDown) {
       onKeyDown(e);
     }
-  }
+  };
 
-  handleTextareaChange = (e) => {
-    if (!('value' in this.props)) {
-      this.resizeTextarea();
-    }
-    const onChange = this.props.onChange;
-    if (onChange) {
-      onChange(e);
-    }
-  }
-
-  resizeTextarea = () => {
-    const { type, autosize } = this.props;
-    if (type !== 'textarea' || !autosize || !this.refs.input) {
-      return;
-    }
-    const minRows = autosize ? (autosize as AutoSizeType).minRows : null;
-    const maxRows = autosize ? (autosize as AutoSizeType).maxRows : null;
-    const textareaStyles = calculateNodeHeight(this.refs.input, false, minRows, maxRows);
-    this.setState({ textareaStyles });
-  }
-
-  focus() {
-    this.refs.input.focus();
-  }
-
-  renderLabledInput(children) {
-    const props = this.props;
-
-    // Not wrap when there is not addons
-    if (props.type === 'textarea' || (!props.addonBefore && !props.addonAfter)) {
-      return children;
-    }
-
-    const wrapperClassName = `${props.prefixCls}-group`;
-    const addonClassName = `${wrapperClassName}-addon`;
-    const addonBefore = props.addonBefore ? (
-      <span className={addonClassName}>
-        {props.addonBefore}
-      </span>
-    ) : null;
-
-    const addonAfter = props.addonAfter ? (
-      <span className={addonClassName}>
-        {props.addonAfter}
-      </span>
-    ) : null;
-
-    const className = classNames({
-      [`${props.prefixCls}-wrapper`]: true,
-      [wrapperClassName]: (addonBefore || addonAfter),
-    });
+  renderComponent = ({ getPrefixCls, direction, input }: ConfigConsumerProps) => {
+    const { value, focused } = this.state;
+    const { prefixCls: customizePrefixCls, bordered = true } = this.props;
+    const prefixCls = getPrefixCls('input', customizePrefixCls);
+    this.direction = direction;
 
     return (
-      <span className={className}>
-        {addonBefore}
-        {children}
-        {addonAfter}
-      </span>
+      <SizeContext.Consumer>
+        {size => (
+          <ClearableLabeledInput
+            size={size}
+            {...this.props}
+            prefixCls={prefixCls}
+            inputType="input"
+            value={fixControlledValue(value)}
+            element={this.renderInput(prefixCls, size, bordered, input)}
+            handleReset={this.handleReset}
+            ref={this.saveClearableInput}
+            direction={direction}
+            focused={focused}
+            triggerFocus={this.focus}
+            bordered={bordered}
+          />
+        )}
+      </SizeContext.Consumer>
     );
-  }
-
-  renderInput() {
-    const props = assign({}, this.props);
-    // Fix https://fb.me/react-unknown-prop
-    const otherProps = omit(this.props, [
-      'prefixCls',
-      'onPressEnter',
-      'autosize',
-      'addonBefore',
-      'addonAfter',
-    ]);
-
-    const prefixCls = props.prefixCls;
-    if (!props.type) {
-      return props.children;
-    }
-
-    const inputClassName = classNames(prefixCls, {
-      [`${prefixCls}-sm`]: props.size === 'small',
-      [`${prefixCls}-lg`]: props.size === 'large',
-    }, props.className);
-
-    if ('value' in props) {
-      otherProps.value = fixControlledValue(props.value);
-      // Input elements must be either controlled or uncontrolled,
-      // specify either the value prop, or the defaultValue prop, but not both.
-      delete otherProps.defaultValue;
-    }
-
-    switch (props.type) {
-      case 'textarea':
-        return (
-          <textarea
-            {...otherProps}
-            style={assign({}, props.style, this.state.textareaStyles)}
-            className={inputClassName}
-            onKeyDown={this.handleKeyDown}
-            onChange={this.handleTextareaChange}
-            ref="input"
-          />
-        );
-      default:
-        return (
-          <input
-            {...otherProps}
-            className={inputClassName}
-            onKeyDown={this.handleKeyDown}
-            ref="input"
-          />
-        );
-    }
-  }
+  };
 
   render() {
-    return this.renderLabledInput(this.renderInput());
+    return <ConfigConsumer>{this.renderComponent}</ConfigConsumer>;
   }
 }
+
+export default Input;

@@ -1,77 +1,99 @@
-// Test dist files
-import fs from 'fs';
-import path from 'path';
+import pkg from '../package.json';
+
+const testDist = process.env.LIB_DIR === 'dist';
 
 describe('antd dist files', () => {
-  const distFilesExisted = fs.existsSync(path.join(process.cwd(), 'dist', 'antd.js'));
-  if (!distFilesExisted) {
-    it('empty test case placeholder', () => {});
-    return;
-  }
-
-  const antd = require('../dist/antd'); // eslint-disable-line global-require
-
   // https://github.com/ant-design/ant-design/issues/1638
   // https://github.com/ant-design/ant-design/issues/1968
-  it('should has modules in antd', () => {
-    expect('Affix' in antd).toBeTruthy();
-    expect('Alert' in antd).toBeTruthy();
-    expect('Anchor' in antd).toBeTruthy();
-    expect('AutoComplete' in antd).toBeTruthy();
-    expect('BackTop' in antd).toBeTruthy();
-    expect('Badge' in antd).toBeTruthy();
-    expect('Breadcrumb' in antd).toBeTruthy();
-    expect('Button' in antd).toBeTruthy();
-    expect('Calendar' in antd).toBeTruthy();
-    expect('Card' in antd).toBeTruthy();
-    expect('Carousel' in antd).toBeTruthy();
-    expect('Cascader' in antd).toBeTruthy();
-    expect('Checkbox' in antd).toBeTruthy();
-    expect('Col' in antd).toBeTruthy();
-    expect('Collapse' in antd).toBeTruthy();
-    expect('DatePicker' in antd).toBeTruthy();
-    expect('Dropdown' in antd).toBeTruthy();
-    expect('Form' in antd).toBeTruthy();
-    expect('Icon' in antd).toBeTruthy();
-    expect('Input' in antd).toBeTruthy();
-    expect('InputNumber' in antd).toBeTruthy();
-    expect('LocaleProvider' in antd).toBeTruthy();
-    expect('Menu' in antd).toBeTruthy();
-    expect('message' in antd).toBeTruthy();
-    expect('Modal' in antd).toBeTruthy();
-    expect('Mention' in antd).toBeTruthy();
-    expect('notification' in antd).toBeTruthy();
-    expect('Pagination' in antd).toBeTruthy();
-    expect('Popconfirm' in antd).toBeTruthy();
-    expect('Popover' in antd).toBeTruthy();
-    expect('Progress' in antd).toBeTruthy();
-    expect('Radio' in antd).toBeTruthy();
-    expect('Rate' in antd).toBeTruthy();
-    expect('Row' in antd).toBeTruthy();
-    expect('Select' in antd).toBeTruthy();
-    expect('Slider' in antd).toBeTruthy();
-    expect('Spin' in antd).toBeTruthy();
-    expect('Steps' in antd).toBeTruthy();
-    expect('Switch' in antd).toBeTruthy();
-    expect('Table' in antd).toBeTruthy();
-    expect('Tabs' in antd).toBeTruthy();
-    expect('Tag' in antd).toBeTruthy();
-    expect('TimePicker' in antd).toBeTruthy();
-    expect('Timeline' in antd).toBeTruthy();
-    expect('Tooltip' in antd).toBeTruthy();
-    expect('Transfer' in antd).toBeTruthy();
-    expect('Tree' in antd).toBeTruthy();
-    expect('TreeSelect' in antd).toBeTruthy();
-    expect('Upload' in antd).toBeTruthy();
+  it('exports modules correctly', () => {
+    // eslint-disable-next-line global-require,import/no-unresolved
+    const antd = testDist ? require('../dist/antd') : require('../components');
+    expect(Object.keys(antd)).toMatchSnapshot();
   });
 
   // https://github.com/ant-design/ant-design/issues/1970
   // https://github.com/ant-design/ant-design/issues/1804
-  it('should be compatible in IE8', () => {
-    const antdJsContent = fs.readFileSync(path.join(process.cwd(), 'dist', 'antd.js'));
-    expect(
-      antdJsContent.toString()
-       .indexOf('function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }')
-    ).toBe(-1);
-  });
+  if (testDist) {
+    it('antd.js should export version', () => {
+      // eslint-disable-next-line global-require,import/no-unresolved
+      const antd = require('../dist/antd');
+      expect(antd).toBeTruthy();
+      expect(antd.version).toBe(pkg.version);
+    });
+
+    it('antd.min.js should export version', () => {
+      // eslint-disable-next-line global-require,import/no-unresolved
+      const antd = require('../dist/antd.min');
+      expect(antd).toBeTruthy();
+      expect(antd.version).toBe(pkg.version);
+    });
+
+    /* eslint-disable global-require,import/no-unresolved */
+    const defaultTheme = require('../dist/default-theme');
+    const darkTheme = require('../dist/dark-theme');
+    const compactTheme = require('../dist/compact-theme');
+    const { getThemeVariables } = require('../dist/theme');
+    /* eslint-enable global-require,import/no-unresolved */
+
+    const expectThemeWithoutDark = theme => {
+      expect(theme['blue-3']).toBe("color(~`colorPalette('@{blue-6}', 3) `)");
+      expect(theme['body-background']).toBe('#fff');
+    };
+
+    const expectDarkTheme = theme => {
+      expect(theme['blue-3']).toBe('mix(@blue-base, @component-background, 30%)');
+      expect(theme['body-background']).toBe('@black');
+    };
+
+    const expectThemeWithoutCompact = theme => {
+      expect(theme['padding-lg']).toBe('24px');
+      expect(theme['padding-md']).toBe('16px');
+    };
+
+    const expectCompactTheme = theme => {
+      expect(theme['padding-lg']).toBe('16px');
+      expect(theme['padding-md']).toBe('8px');
+    };
+
+    describe('theme variables', () => {
+      it('should be get default theme', () => {
+        expectThemeWithoutDark(defaultTheme);
+        expectThemeWithoutCompact(defaultTheme);
+      });
+
+      it('should be get dark theme', () => {
+        expectDarkTheme(darkTheme);
+        expectThemeWithoutCompact(darkTheme);
+      });
+
+      it('should be get compact theme', () => {
+        expectCompactTheme(compactTheme);
+        expectThemeWithoutDark(compactTheme);
+      });
+
+      it('shoule get default variables by getThemeVariables()', () => {
+        const theme = getThemeVariables();
+        expectThemeWithoutCompact(theme);
+        expectThemeWithoutDark(theme);
+      });
+
+      it('shoule get dark variables by getThemeVariables({ dark: true })', () => {
+        const theme = getThemeVariables({ dark: true });
+        expectDarkTheme(theme);
+        expectThemeWithoutCompact(theme);
+      });
+
+      it('shoule get compact variables by getThemeVariables({ compact: true })', () => {
+        const theme = getThemeVariables({ compact: true });
+        expectThemeWithoutDark(theme);
+        expectCompactTheme(theme);
+      });
+
+      it('shoule get compact&dark variables by getThemeVariables({ compact: true, dark: true })', () => {
+        const theme = getThemeVariables({ compact: true, dark: true });
+        expectDarkTheme(theme);
+        expectCompactTheme(theme);
+      });
+    });
+  }
 });

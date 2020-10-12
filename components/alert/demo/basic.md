@@ -13,10 +13,14 @@ title:
 
 The simplest usage for short messages.
 
-````jsx
+```tsx
 import { Alert } from 'antd';
 
-ReactDOM.render(
-  <Alert message="Success Text" type="success" />
-, mountNode);
-````
+ReactDOM.render(<Alert message="Success Text" type="success" />, mountNode);
+```
+
+<style>
+.code-box-demo .ant-alert {
+  margin-bottom: 16px;
+}
+</style>

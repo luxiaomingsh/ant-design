@@ -13,59 +13,61 @@ title:
 
 The count will be animated as it changes.
 
-````jsx
-import { Badge, Button, Icon } from 'antd';
+```jsx
+import { Badge, Button, Switch } from 'antd';
+import { MinusOutlined, PlusOutlined } from '@ant-design/icons';
+
 const ButtonGroup = Button.Group;
 
-const Test = React.createClass({
-  getInitialState() {
-    return {
-      count: 5,
-      show: true,
-    };
-  },
-  increase() {
+class Demo extends React.Component {
+  state = {
+    count: 5,
+    show: true,
+  };
+
+  increase = () => {
     const count = this.state.count + 1;
     this.setState({ count });
-  },
-  decline() {
+  };
+
+  decline = () => {
     let count = this.state.count - 1;
     if (count < 0) {
       count = 0;
     }
     this.setState({ count });
-  },
-  onClick() {
-    this.setState({
-      show: !this.state.show,
-    });
-  },
+  };
+
+  onChange = show => {
+    this.setState({ show });
+  };
+
   render() {
     return (
       <div>
-        <Badge count={this.state.count}>
-          <a href="#" className="head-example" />
-        </Badge>
-        <Badge dot={this.state.show}>
-          <a href="#" className="head-example" />
-        </Badge>
-        <div style={{ marginTop: 10 }}>
+        <div>
+          <Badge count={this.state.count}>
+            <a href="#" className="head-example" />
+          </Badge>
           <ButtonGroup>
-            <Button type="ghost" onClick={this.decline}>
-              <Icon type="minus" />
+            <Button onClick={this.decline}>
+              <MinusOutlined />
             </Button>
-            <Button type="ghost" onClick={this.increase}>
-              <Icon type="plus" />
+            <Button onClick={this.increase}>
+              <PlusOutlined />
             </Button>
           </ButtonGroup>
-          <Button type="ghost" onClick={this.onClick} style={{ marginLeft: 8 }}>
-            Switch state
-          </Button>
+        </div>
+        <div style={{ marginTop: 10 }}>
+          <Badge dot={this.state.show}>
+            <a href="#" className="head-example" />
+          </Badge>
+          <Switch onChange={this.onChange} checked={this.state.show} />
         </div>
       </div>
     );
-  },
-});
+  }
+}
 
-ReactDOM.render(<Test />, mountNode);
-````
+ReactDOM.render(<Demo />, mountNode);
+```

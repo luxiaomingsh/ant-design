@@ -1,5 +1,5 @@
 import Timeline from './Timeline';
-import TimelineItem from './TimelineItem';
 
-Timeline.Item = TimelineItem;
+export type { TimelineItemType as TimelineItemProps, TimelineProps } from './Timeline';
+
 export default Timeline;

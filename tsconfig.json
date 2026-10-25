@@ -1,12 +1,30 @@
 {
   "compilerOptions": {
+    "target": "es2020",
+    "jsx": "react",
+    "jsxFactory": "React.createElement",
+    "jsxFragmentFactory": "React.Fragment",
+    "lib": ["dom", "es2017"],
+    "experimentalDecorators": true,
+    "module": "esnext",
+    "moduleResolution": "Bundler",
+    "paths": {
+      "@@/*": ["./.dumi/tmp/*"],
+      "antd": ["./components/index.ts"],
+      "antd/es/*": ["./components/*"],
+      "antd/lib/*": ["./components/*"],
+      "antd/locale/*": ["./components/locale/*"]
+    },
+    "resolvePackageJsonExports": true,
+    "strict": true,
     "strictNullChecks": true,
-    "moduleResolution": "node",
-    "allowSyntheticDefaultImports": true,
-    "jsx": "preserve",
-    "target": "es6"
+    "noImplicitAny": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "stripInternal": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true
   },
-  "exclude": [
-    "node_modules"
-  ]
+  "include": [".dumirc.ts", "**/*"],
+  "exclude": ["node_modules", "lib", "es"]
 }

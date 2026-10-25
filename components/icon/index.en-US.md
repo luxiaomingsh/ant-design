@@ -1,129 +1,223 @@
 ---
 category: Components
-type: General
+group: General
 title: Icon
-toc: false
+description: Semantic vector graphics.
+cover: https://mdn.alipayobjects.com/huamei_7uahnr/afts/img/A*PdAYS7anRpoAAAAAAAAAAAAADrJ8AQ/original
+coverDark: https://mdn.alipayobjects.com/huamei_7uahnr/afts/img/A*xEDOTJx2DEkAAAAAAAAAAAAADrJ8AQ/original
 ---
 
-Meaningful vector graphics.
+## How to use
 
-## Icons naming convention
+Before using icons, you need to install the [@ant-design/icons](https://github.com/ant-design/ant-design-icons) package:
 
-We provide semantic name for every icon, and naming rules are as follows:
+<InstallDependencies npm='npm install @ant-design/icons@6.x --save' yarn='yarn add @ant-design/icons@6.x' pnpm='pnpm install @ant-design/icons@6.x --save' bun='bun add @ant-design/icons@6.x'></InstallDependencies>
 
-- Scanning line icon has the similar name with its solid one，but it's distinguished by `-o`, for example, `question-circle`(a full circle) and `question-circle-o`(an empty circle);
-
-- Naming sequence：`[icon's name]-[shape, optional]-[Scanning line or not]-[direction, optional]`.
-
-## How To Use
-
-Use tag <Icon /> to create an icon and set its type in the type prop, for example:
-
-```html
-<Icon type="link" />
-```
-
-Finally, it will be rendered as follow:
-
-```html
-<i class="anticon anticon-${type}"></i>
-```
-
-## Local deployment of icons font
-
-By default, icon components uses [iconfont.cn](http://iconfont.cn), publicly available repository of a huge set of icons. In case you need to use a locally deployed version of the icon font, you can refer to [this example](https://github.com/ant-design/antd-init/tree/master/examples/local-iconfont)。
+<!-- prettier-ignore -->
+:::info{title=Tips}
+Remember to use `@ant-design/icons@6.x` with `antd@6.x`, see: [#53275](https://github.com/ant-design/ant-design/issues/53275#issuecomment-2747448317)
+:::
 
 ## List of icons
 
-> Click the icon and copy the code。
+<IconSearch></IconSearch>
 
-### Directional Icons
+## Examples
 
-```__react
-import IconSet from 'site/theme/template/IconSet';
-ReactDOM.render(<IconSet className="icons" catigory="direction" />, mountNode);
+<!-- prettier-ignore -->
+<code src="./demo/basic.tsx">Basic</code>
+<code src="./demo/two-tone.tsx">Two-tone icon and colorful icon</code>
+<code src="./demo/custom.tsx">Custom Icon</code>
+<code src="./demo/iconfont.tsx">Use iconfont.cn</code>
+<code src="./demo/scriptUrl.tsx">Multiple resources from iconfont.cn</code>
+
+## API
+
+### Common Icon
+
+| Property | Description | Type | Default | Version | [Global Config](/components/config-provider#component-config) |
+| --- | --- | --- | --- | --- | --- |
+| className | The className of Icon | string | - |  | × |
+| rotate | Rotate by n degrees (not working in IE9) | number | - |  | × |
+| spin | Rotate icon with animation | boolean | false |  | × |
+| style | The style properties of icon, like `fontSize` and `color` | CSSProperties | - |  | × |
+| twoToneColor | Only supports the two-tone icon. Specify the primary color, or primary and secondary colors | string \| \[string, string] | - |  | × |
+
+We still have three different themes for icons, icon component name is the icon name suffixed by the theme name.
+
+```jsx
+import { StarOutlined, StarFilled, StarTwoTone } from '@ant-design/icons';
+
+<StarOutlined />
+<StarFilled />
+<StarTwoTone twoToneColor="#eb2f96" />
 ```
 
-### Suggested Icons
+### Custom Icon
 
-```__react
-ReactDOM.render(<IconSet className="icons" catigory="suggestion" />, mountNode);
+| Property | Description | Type | Default | Version | [Global Config](/components/config-provider#component-config) |
+| --- | --- | --- | --- | --- | --- |
+| component | The component used for the root node | ComponentType&lt;CustomIconComponentProps> | - |  | × |
+| rotate | Rotate degrees (not working in IE9) | number | - |  | × |
+| spin | Rotate icon with animation | boolean | false |  | × |
+| style | The style properties of icon, like `fontSize` and `color` | CSSProperties | - |  | × |
+
+### About SVG icons
+
+We introduced SVG icons in version `3.9.0`, replacing font icons. This has the following benefits:
+
+- Complete offline usage of icons, without dependency on a CDN-hosted font icon file (No more empty square during downloading and no need to deploy icon font files locally either!)
+- Much more display accuracy on lower-resolution screens
+- The ability to choose icon color
+- No need to change built-in icons with overriding styles by providing more props in component
+
+More discussion of SVG icon reference at [#10353](https://github.com/ant-design/ant-design/issues/10353).
+
+> ⚠️ Given the extra bundle size caused by all SVG icons imported in 3.9.0, we will provide a new API to allow developers to import icons as needed, you can track [#12011](https://github.com/ant-design/ant-design/issues/12011) for updates.
+>
+> While you wait, you can use [webpack plugin](https://github.com/Beven91/webpack-ant-icon-loader) from the community to chunk the icon file.
+
+The properties `theme`, `component` and `twoToneColor` were added in `3.9.0`. The best practice is to pass the property `theme` to every `<Icon />` component.
+
+```jsx
+import { MessageOutlined } from '@ant-design/icons';
+
+<MessageOutlined style={{ fontSize: '16px', color: '#08c' }} />;
 ```
 
-### Other Icons
+All the icons will render to `<svg>`. You can still set `style` and `className` for size and color of icons.
 
-```__react
-ReactDOM.render(<IconSet className="icons" catigory="other" />, mountNode);
+```jsx
+<Icon type="message" style={{ fontSize: '16px', color: '#08c' }} theme="outlined" />
 ```
 
-## Props
+### Set TwoTone Color {#set-two-tone-color}
 
-| Property | Description      | Type   | Default |
-|----------|------------------|------- |---------|
-| type | Type of ant design icons | string | - |
-| spin | Rotate icon with animation | boolean | false |
+When using the two-tone icons, you can use the static methods `getTwoToneColor()` and `setTwoToneColor(colorString)` to specify the primary color.
 
-<style>
-.markdown .icons {
-  width: 100%;
-}
-ul.anticons-list {
-  margin: 40px 0;
-  list-style: none;
-  overflow: hidden;
-}
-ul.anticons-list li {
-  float: left;
-  width: 16.66%;
-  text-align: center;
-  list-style: none;
-  cursor: pointer;
-  height: 100px;
-  color: #555;
-  transition: all 0.2s ease;
-  position: relative;
-  margin: 3px 0;
-  border-radius: 4px;
-  background-color: #fff;
-  overflow: hidden;
-  padding: 10px 0 0 0;
-}
-ul.anticons-list li:hover {
-  background-color: #eaf8fe;
-}
-ul.anticons-list li.copied:hover {
-  color: rgba(255,255,255,0.2);
-}
-ul.anticons-list li:after {
-  position: absolute;
-  top: 0;
-  left: 0;
-  height: 100%;
-  width: 100%;
-  content: "Copied!";
-  text-align: center;
-  line-height: 110px;
-  color: #108ee9;
-  transition: all 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
-  opacity: 0;
-}
-ul.anticons-list li.copied:after {
-  opacity: 1;
-  top: -10px;
-}
-.anticon {
-  font-size: 24px;
-  margin: 12px 0 16px;
-  transition: all .3s;
-}
-ul.anticons-list li:hover .anticon {
-  transform: scale(1.4);
-}
-.anticon-class {
-  display: block;
-  text-align: center;
-  transform: scale(0.83);
-  font-family: "Lucida Console", Consolas;
-  white-space: nowrap;
-}
-</style>
+```jsx
+import { getTwoToneColor, setTwoToneColor } from '@ant-design/icons';
+
+setTwoToneColor('#eb2f96');
+getTwoToneColor(); // #eb2f96
+```
+
+### Custom Font Icon
+
+We added a `createFromIconfontCN` function to help developer use their own icons deployed at [iconfont.cn](https://iconfont.cn/) in a convenient way.
+
+> This method is specified for [iconfont.cn](https://iconfont.cn/).
+
+```jsx
+import React from 'react';
+import { createFromIconfontCN } from '@ant-design/icons';
+import ReactDOM from 'react-dom/client';
+
+const MyIcon = createFromIconfontCN({
+  scriptUrl: '//at.alicdn.com/t/font_8d5l8fzk5b87iudi.js', // generate in iconfont.cn
+});
+
+ReactDOM.createRoot(mountNode).render(<MyIcon type="icon-example" />);
+```
+
+It creates a component that uses SVG sprites in essence.
+
+The following options are available:
+
+| Property | Description | Type | Default | Version | [Global Config](/components/config-provider#component-config) |
+| --- | --- | --- | --- | --- | --- |
+| extraCommonProps | Define extra properties to the component | { \[key: string]: any } | {} |  | × |
+| scriptUrl | The URL generated by [iconfont.cn](https://iconfont.cn/) project. Support `string[]` after `@ant-design/icons@4.1.0` | string \| string\[] | - |  | × |
+
+The property `scriptUrl` should be set to import the SVG sprite symbols.
+
+See [iconfont.cn documents](https://iconfont.cn/help/detail?spm=a313x.7781069.1998910419.15&helptype=code) to learn about how to generate `scriptUrl`.
+
+### Custom SVG Icon
+
+You can import SVG icon as a react component by using `webpack` and [`@svgr/webpack`](https://www.npmjs.com/package/@svgr/webpack). `@svgr/webpack`'s `options` [reference](https://github.com/smooth-code/svgr#options).
+
+```js
+// webpack.config.js
+module.exports = {
+  // ... other config
+  test: /\.svg(\?v=\d+\.\d+\.\d+)?$/,
+  use: [
+    {
+      loader: 'babel-loader',
+    },
+    {
+      loader: '@svgr/webpack',
+      options: {
+        babel: false,
+        icon: true,
+      },
+    },
+  ],
+};
+```
+
+You can import SVG icon as a react component by using `vite` and [`vite-plugin-svgr`](https://www.npmjs.com/package/vite-plugin-svgr). `@svgr/webpack`'s `options` [reference](https://github.com/smooth-code/svgr#options).
+
+```js
+// vite.config.js
+export default defineConfig(() => ({
+  // ... other config
+  plugins: [svgr({ svgrOptions: { icon: true } })],
+}));
+```
+
+```jsx
+import React from 'react';
+import Icon from '@ant-design/icons';
+import MessageSvg from 'path/to/message.svg'; // path to your '*.svg' file.
+
+// import MessageSvg from 'path/to/message.svg?react'; // use vite path to your '*.svg?react' file.
+import ReactDOM from 'react-dom/client';
+
+// in create-react-app:
+// import { ReactComponent as MessageSvg } from 'path/to/message.svg';
+
+ReactDOM.createRoot(mountNode).render(<Icon component={MessageSvg} />);
+```
+
+The following properties are available for the component:
+
+| Property | Description | Type | Readonly | Version | [Global Config](/components/config-provider#component-config) |
+| --- | --- | --- | --- | --- | --- |
+| className | The computed class name of the `svg` element | string | - |  | × |
+| fill | Define the color used to paint the `svg` element | string | `currentColor` |  | × |
+| height | The height of the `svg` element | string \| number | `1em` |  | × |
+| style | The computed style of the `svg` element | CSSProperties | - |  | × |
+| width | The width of the `svg` element | string \| number | `1em` |  | × |
+
+## Design Token
+
+<ComponentTokenTable component="Icon"></ComponentTokenTable>
+
+## FAQ
+
+### Why does icon style sometimes cause global style error? {#faq-icon-bad-style}
+
+Related issue: [#54391](https://github.com/ant-design/ant-design/issues/54391)
+
+When enable `layer`, icon style may deprioritize `@layer antd` and cause all components to be styled abnormally.
+
+This problem can be resolved by two steps below:
+
+1. use `@ant-design/icons@6.x` with `antd@6.x`.
+2. stop to use static methods of `message`, `Modal` and `notification`. use hooks version or `App` provided instance.
+
+If you must use static methods, you can put any of icon components just under `App`, what helps to avoid style impact caused by static methods.
+
+```diff
+<StyleProvider layer>
+  <ConfigProvider>
+    <App>
++     {/* any icon */}
++     <RightOutlined />
+      {/* your pages */}
+    </App>
+  </ConfigProvider>
+</StyleProvider>
+```

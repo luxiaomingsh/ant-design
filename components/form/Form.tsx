@@ -1,175 +1,314 @@
-import React from 'react';
-import { PropTypes } from 'react';
-import classNames from 'classnames';
-import createDOMForm from 'rc-form/lib/createDOMForm';
-import PureRenderMixin from 'rc-util/lib/PureRenderMixin';
-import omit from 'omit.js';
-import assign from 'object-assign';
-import warning from '../_util/warning';
-import FormItem from './FormItem';
-import { FIELD_META_PROP } from './constants';
+import * as React from 'react';
+import FieldForm, { List, useWatch } from '@rc-component/form';
+import type {
+  FormRef,
+  InternalNamePath,
+  FormProps as RcFormProps,
+  ValidateErrorEntity,
+} from '@rc-component/form';
+import { clsx } from 'clsx';
 
-export interface FormCreateOption {
-  onFieldsChange?: (props: any, fields: Array<any>) => void;
-  mapPropsToFields?: (props: any) => void;
-  withRef?: boolean;
-}
+import { useMergeSemantic, useSemanticRootStyle } from '../_util/hooks/useMergeSemantic';
+import type { GenerateSemantic } from '../_util/hooks/useMergeSemantic/semanticType';
+import { isPlainObject } from '../_util/is';
+import type { Variant } from '../config-provider';
+import { useComponentConfig } from '../config-provider/context';
+import DisabledContext, { DisabledContextProvider } from '../config-provider/DisabledContext';
+import useCSSVarCls from '../config-provider/hooks/useCSSVarCls';
+import useSize from '../config-provider/hooks/useSize';
+import type { SizeType } from '../config-provider/SizeContext';
+import SizeContext from '../config-provider/SizeContext';
+import type { ColProps } from '../grid/col';
+import type { FormContextProps } from './context';
+import { FormContext, FormProvider, NoFormStyle, VariantContext } from './context';
+import type { FeedbackIcons } from './FormItem';
+import type { FormTooltipProps } from './FormItemLabel';
+import useForm from './hooks/useForm';
+import type { FormInstance } from './hooks/useForm';
+import useFormWarning from './hooks/useFormWarning';
+import type { FormLabelAlign, ScrollFocusOptions } from './interface';
+import useStyle from './style';
+import ValidateMessagesContext from './validateMessagesContext';
 
-export interface FormProps {
-  horizontal?: boolean;
-  inline?: boolean;
-  vertical?: boolean;
-  form?: WrappedFormUtils;
-  onSubmit?: React.FormEventHandler<any>;
-  style?: React.CSSProperties;
-  className?: string;
+export type RequiredMark =
+  | boolean
+  | 'optional'
+  | ((labelNode: React.ReactNode, info: { required: boolean }) => React.ReactNode);
+export type FormLayout = 'horizontal' | 'inline' | 'vertical';
+export type FormItemLayout = 'horizontal' | 'vertical';
+
+export type { ScrollFocusOptions };
+
+export type FormSemanticType = {
+  classNames?: {
+    root?: string;
+    label?: string;
+    content?: string;
+    help?: string;
+    helpItem?: string;
+    extra?: string;
+  };
+  styles?: {
+    root?: React.CSSProperties;
+    label?: React.CSSProperties;
+    content?: React.CSSProperties;
+    help?: React.CSSProperties;
+    helpItem?: React.CSSProperties;
+    extra?: React.CSSProperties;
+  };
+};
+
+export type FormSemanticAllType = GenerateSemantic<FormSemanticType, FormProps>;
+
+export interface FormProps<Values = any> extends Omit<RcFormProps<Values>, 'form'> {
+  classNames?: FormSemanticAllType['classNamesAndFn'];
+  styles?: FormSemanticAllType['stylesAndFn'];
   prefixCls?: string;
+  colon?: boolean;
+  name?: string;
+  layout?: FormLayout;
+  labelAlign?: FormLabelAlign;
+  labelWrap?: boolean;
+  labelCol?: ColProps;
+  wrapperCol?: ColProps;
+  form?: FormInstance<Values>;
+  feedbackIcons?: FeedbackIcons;
+  size?: SizeType;
+  disabled?: boolean;
+  scrollToFirstError?: ScrollFocusOptions | boolean;
+  requiredMark?: RequiredMark;
+  rootClassName?: string;
+  variant?: Variant;
+  tooltip?: FormTooltipProps;
 }
 
-// function create
-export type WrappedFormUtils = {
-  /** 获取一组输入控件的值，如不传入参数，则获取全部组件的值 */
-  getFieldsValue(fieldNames?: Array<string>): Object;
-  /** 获取一个输入控件的值*/
-  getFieldValue(fieldName: string): any;
-  /** 设置一组输入控件的值*/
-  setFieldsValue(obj: Object): void;
-  /** 设置一组输入控件的值*/
-  setFields(obj: Object): void;
-  /** 校验并获取一组输入域的值与 Error */
-  validateFields(fieldNames: Array<string>, options: Object, callback: (erros: any, values: any) => void): any;
-  validateFields(fieldNames: Array<string>, callback: (erros: any, values: any) => void): any;
-  validateFields(options: Object, callback: (erros: any, values: any) => void): any;
-  validateFields(callback: (erros: any, values: any) => void): any;
-  /** 与 `validateFields` 相似，但校验完后，如果校验不通过的菜单域不在可见范围内，则自动滚动进可见范围 */
-  validateFieldsAndScroll(fieldNames?: Array<string>,
-                          options?: Object,
-                          callback?: (erros: any, values: any) => void): void;
-  /** 获取某个输入控件的 Error */
-  getFieldError(name: string): Object[];
-  /** 判断一个输入控件是否在校验状态*/
-  isFieldValidating(name: string): boolean;
-  /** 重置一组输入控件的值与状态，如不传入参数，则重置所有组件 */
-  resetFields(names?: Array<string>): void;
+const InternalForm: React.ForwardRefRenderFunction<FormRef, FormProps> = (props, ref) => {
+  const contextDisabled = React.useContext(DisabledContext);
+  const {
+    getPrefixCls,
+    direction,
+    requiredMark: contextRequiredMark,
+    colon: contextColon,
+    scrollToFirstError: contextScrollToFirstError,
+    className: contextClassName,
+    style: contextStyle,
+    styles: contextStyles,
+    classNames: contextClassNames,
+    tooltip: contextTooltip,
+    labelAlign: contextLabelAlign,
+    labelWrap: contextLabelWrap,
+  } = useComponentConfig('form');
 
-  getFieldDecorator(id: string, options: {
-    /** 子节点的值的属性，如 Checkbox 的是 'checked' */
-    valuePropName?: string;
-    /** 子节点的初始值，类型、可选值均由子节点决定 */
-    initialValue?: any;
-    /** 收集子节点的值的时机 */
-    trigger?: string;
-    /** 可以把 onChange 的参数转化为控件的值，例如 DatePicker 可设为：(date, dateString) => dateString */
-    getValueFromEvent?: (...args: any[]) => any;
-    /** 校验子节点值的时机 */
-    validateTrigger?: string;
-    /** 校验规则，参见 [async-validator](https://github.com/yiminghe/async-validator) */
-    rules?: Array<any>;
-    /** 是否和其他控件互斥，特别用于 Radio 单选控件 */
-    exclusive?: boolean;
-  }): (node: React.ReactNode) => React.ReactNode;
-}
+  const {
+    prefixCls: customizePrefixCls,
+    className,
+    rootClassName,
+    size,
+    disabled = contextDisabled,
+    form,
+    colon,
+    labelAlign,
+    labelWrap,
+    labelCol,
+    wrapperCol,
+    layout = 'horizontal',
+    scrollToFirstError,
+    requiredMark,
+    onFinishFailed,
+    name,
+    style,
+    feedbackIcons,
+    variant,
+    classNames,
+    styles,
+    tooltip,
+    ...restFormProps
+  } = props;
 
-export interface FormComponentProps {
-  form?: WrappedFormUtils;
-}
+  const mergedSize = useSize(size);
 
-export class FormComponent extends React.Component<FormComponentProps, {}> {
-}
+  const contextValidateMessages = React.useContext(ValidateMessagesContext);
 
-export interface ComponentDecorator {
-  <T extends (typeof FormComponent)>(component: T): T;
-}
+  if (process.env.NODE_ENV !== 'production') {
+    useFormWarning(props);
+  }
 
-export default class Form extends React.Component<FormProps, any> {
-  static defaultProps = {
-    prefixCls: 'ant-form',
-    onSubmit(e) {
-      e.preventDefault();
+  const mergedRequiredMark = React.useMemo(() => {
+    if (requiredMark !== undefined) {
+      return requiredMark;
+    }
+
+    if (contextRequiredMark !== undefined) {
+      return contextRequiredMark;
+    }
+
+    return true;
+  }, [requiredMark, contextRequiredMark]);
+
+  const mergedColon = colon ?? contextColon;
+
+  const mergedLabelAlign = labelAlign ?? contextLabelAlign;
+
+  const mergedLabelWrap = labelWrap ?? contextLabelWrap;
+
+  const mergedTooltip = { ...contextTooltip, ...tooltip };
+
+  const prefixCls = getPrefixCls('form', customizePrefixCls);
+
+  // Style
+  const rootCls = useCSSVarCls(prefixCls);
+  const [hashId, cssVarCls] = useStyle(prefixCls, rootCls);
+
+  // =========== Merged Props for Semantic ===========
+  const mergedProps: FormProps = {
+    ...props,
+    size: mergedSize,
+    disabled,
+    layout,
+    colon: mergedColon,
+    requiredMark: mergedRequiredMark,
+    labelAlign: mergedLabelAlign,
+    labelWrap: mergedLabelWrap,
+  };
+
+  const contextStyleRoot = useSemanticRootStyle(contextStyle);
+  const styleRoot = useSemanticRootStyle(style);
+
+  const [mergedClassNames, mergedStyles] = useMergeSemantic<
+    FormSemanticAllType['classNames'],
+    FormSemanticAllType['styles'],
+    FormProps
+  >([contextClassNames, classNames], [contextStyles, contextStyleRoot, styles, styleRoot], {
+    props: mergedProps,
+  });
+
+  const formClassName = clsx(
+    prefixCls,
+    `${prefixCls}-${layout}`,
+    {
+      [`${prefixCls}-hide-required-mark`]: mergedRequiredMark === false, // todo: remove in next major version
+      [`${prefixCls}-rtl`]: direction === 'rtl',
+      [`${prefixCls}-large`]: mergedSize === 'large',
+      [`${prefixCls}-small`]: mergedSize === 'small',
     },
+    cssVarCls,
+    rootCls,
+    hashId,
+    contextClassName,
+    className,
+    rootClassName,
+    mergedClassNames.root,
+  );
+
+  const [wrapForm] = useForm(form);
+  const { __INTERNAL__ } = wrapForm;
+  __INTERNAL__.name = name;
+
+  const formContextValue = React.useMemo<FormContextProps>(
+    () => ({
+      name,
+      labelAlign: mergedLabelAlign,
+      labelCol,
+      labelWrap: mergedLabelWrap,
+      wrapperCol,
+      layout,
+      colon: mergedColon,
+      requiredMark: mergedRequiredMark,
+      itemRef: __INTERNAL__.itemRef,
+      form: wrapForm,
+      feedbackIcons,
+      tooltip: mergedTooltip,
+      classNames: mergedClassNames,
+      styles: mergedStyles,
+    }),
+    [
+      name,
+      mergedLabelAlign,
+      mergedLabelWrap,
+      labelCol,
+      wrapperCol,
+      layout,
+      mergedColon,
+      mergedRequiredMark,
+      wrapForm,
+      feedbackIcons,
+      mergedClassNames,
+      mergedStyles,
+      mergedTooltip,
+    ],
+  );
+
+  const nativeElementRef = React.useRef<FormRef>(null);
+  React.useImperativeHandle(ref, () => ({
+    ...wrapForm,
+    nativeElement: nativeElementRef.current?.nativeElement,
+  }));
+
+  const scrollToField = (options: ScrollFocusOptions | boolean, fieldName: InternalNamePath) => {
+    if (options) {
+      let defaultScrollToFirstError: ScrollFocusOptions = { block: 'nearest' };
+      if (isPlainObject(options)) {
+        defaultScrollToFirstError = { ...defaultScrollToFirstError, ...options };
+      }
+      wrapForm.scrollToField(fieldName, defaultScrollToFirstError);
+    }
   };
 
-  static propTypes = {
-    prefixCls: React.PropTypes.string,
-    vertical: React.PropTypes.bool,
-    horizontal: React.PropTypes.bool,
-    inline: React.PropTypes.bool,
-    children: React.PropTypes.any,
-    onSubmit: React.PropTypes.func,
+  const onInternalFinishFailed = (errorInfo: ValidateErrorEntity) => {
+    onFinishFailed?.(errorInfo);
+    if (errorInfo.errorFields.length) {
+      const fieldName = errorInfo.errorFields[0].name;
+      if (scrollToFirstError !== undefined) {
+        scrollToField(scrollToFirstError, fieldName);
+        return;
+      }
+
+      if (contextScrollToFirstError !== undefined) {
+        scrollToField(contextScrollToFirstError, fieldName);
+      }
+    }
   };
 
-  static Item = FormItem;
+  return (
+    <VariantContext.Provider value={variant}>
+      <DisabledContextProvider disabled={disabled}>
+        <SizeContext.Provider value={mergedSize}>
+          <FormProvider
+            {...{
+              // This is not list in API, we pass with spread
+              validateMessages: contextValidateMessages,
+            }}
+          >
+            <FormContext.Provider value={formContextValue}>
+              <NoFormStyle status>
+                <FieldForm
+                  id={name}
+                  {...restFormProps}
+                  name={name}
+                  onFinishFailed={onInternalFinishFailed}
+                  form={wrapForm}
+                  ref={nativeElementRef}
+                  style={mergedStyles?.root}
+                  className={formClassName}
+                />
+              </NoFormStyle>
+            </FormContext.Provider>
+          </FormProvider>
+        </SizeContext.Provider>
+      </DisabledContextProvider>
+    </VariantContext.Provider>
+  );
+};
 
-  static create = (options?: FormCreateOption): ComponentDecorator => {
-    const formWrapper = createDOMForm(assign({
-      fieldNameProp: 'id',
-    }, options, {
-      fieldMetaProp: FIELD_META_PROP,
-    }));
+const Form = React.forwardRef<FormRef, FormProps>(InternalForm) as (<Values = any>(
+  props: React.PropsWithChildren<FormProps<Values>> & React.RefAttributes<FormRef<Values>>,
+) => React.ReactElement) &
+  Pick<React.FC, 'displayName'>;
 
-    /* eslint-disable react/prefer-es6-class */
-    return (Component) => formWrapper(React.createClass({
-      propTypes: {
-        form: PropTypes.object.isRequired,
-      },
-      childContextTypes: {
-        form: PropTypes.object.isRequired,
-      },
-      getChildContext() {
-        return {
-          form: this.props.form,
-        };
-      },
-      componentWillMount() {
-        this.__getFieldProps = this.props.form.getFieldProps;
-      },
-      deprecatedGetFieldProps(name, option) {
-        warning(
-          false,
-          '`getFieldProps` is not recommended, please use `getFieldDecorator` instead, ' +
-          'see: http://u.ant.design/get-field-decorator'
-        );
-        return this.__getFieldProps(name, option);
-      },
-      render() {
-        this.props.form.getFieldProps = this.deprecatedGetFieldProps;
-
-        const withRef: any = {};
-        if (options && options.withRef) {
-          withRef.ref = 'formWrappedComponent';
-        }
-        return <Component {...this.props} {...withRef} />;
-      },
-    }));
-  };
-
-  constructor(props) {
-    super(props);
-
-    warning(!props.form, 'It is unnecessary to pass `form` to `Form` after antd@1.7.0.');
-  }
-
-  shouldComponentUpdate(...args) {
-    return PureRenderMixin.shouldComponentUpdate.apply(this, args);
-  }
-
-  render() {
-    const { prefixCls, className = '', inline, horizontal, vertical } = this.props;
-    const formClassName = classNames(prefixCls, {
-      [`${prefixCls}-horizontal`]: horizontal,
-      [`${prefixCls}-vertical`]: vertical,
-      [`${prefixCls}-inline`]: inline,
-    }, className);
-
-    const formProps = omit(this.props, [
-      'prefixCls',
-      'className',
-      'inline',
-      'horizontal',
-      'vertical',
-      'form',
-    ]);
-
-    return <form {...formProps} className={formClassName} />;
-  }
+if (process.env.NODE_ENV !== 'production') {
+  Form.displayName = 'Form';
 }
+
+export { type FormInstance, List, useForm, useWatch };
+
+export default Form;

@@ -1,130 +1,173 @@
-import React from 'react';
-import moment from 'moment';
-import RcTimePicker from 'rc-time-picker/lib/TimePicker';
-import classNames from 'classnames';
-import assign from 'object-assign';
-import defaultLocale from './locale/zh_CN';
+import * as React from 'react';
+import type { PickerRef } from '@rc-component/picker';
+import type { Dayjs } from 'dayjs';
 
-// TimePicker
-export interface TimePickerProps {
-  className?: string;
-  size?: 'large' | 'default' | 'small';
-  /** 默认时间 */
-  value?: moment.Moment;
-  /** 初始默认时间 */
-  defaultValue?: moment.Moment;
-  /** 展示的时间格式 : "HH:mm:ss"、"HH:mm"、"mm:ss" */
-  format?: string;
-  /** 时间发生变化的回调 */
-  onChange?: (time: moment.Moment, timeString: string) => void;
-  /** 禁用全部操作 */
-  disabled?: boolean;
-  /** 没有值的时候显示的内容 */
-  placeholder?: string;
-  /** 隐藏禁止选择的选项 */
-  hideDisabledOptions?: boolean;
-  /** 禁止选择部分小时选项 */
-  disabledHours?: Function;
-  /** 禁止选择部分分钟选项 */
-  disabledMinutes?: Function;
-  /** 禁止选择部分秒选项 */
-  disabledSeconds?: Function;
-  style?: React.CSSProperties;
-  getPopupContainer?: (trigger: any) => any;
-  addon?: Function;
-}
+import type { GenerateSemantic } from '../_util/hooks/useMergeSemantic/semanticType';
+import genPurePanel from '../_util/PurePanel';
+import type { InputStatus } from '../_util/statusUtils';
+import type { AnyObject } from '../_util/type';
+import { devUseWarning } from '../_util/warning';
+import DatePicker from '../date-picker';
+import type {
+  GenericTimePickerProps,
+  PickerPropsWithMultiple,
+  RangePickerProps,
+} from '../date-picker/generatePicker/interface';
+import useMergedPickerSemantic from '../date-picker/hooks/useMergedPickerSemantic';
+import useVariant from '../form/hooks/useVariants';
 
-export interface TimePickerContext {
-  antLocale?: {
-    TimePicker?: any,
+export type TimePickerSemanticType = {
+  classNames?: {
+    root?: string;
+    prefix?: string;
+    input?: string;
+    suffix?: string;
+    popup?:
+      | string
+      | {
+          root?: string;
+          content?: string;
+          item?: string;
+          footer?: string;
+          container?: string;
+        };
   };
-}
-
-export default class TimePicker extends React.Component<TimePickerProps, any> {
-  static defaultProps = {
-    prefixCls: 'ant-time-picker',
-    align: {
-      offset: [0, -2],
-    },
-    disabled: false,
-    disabledHours: undefined,
-    disabledMinutes: undefined,
-    disabledSeconds: undefined,
-    hideDisabledOptions: false,
-    placement: 'bottomLeft',
-    transitionName: 'slide-up',
-  };
-
-  static contextTypes = {
-    antLocale: React.PropTypes.object,
-  };
-
-  context: TimePickerContext;
-
-  constructor(props) {
-    super(props);
-    const value = props.value || props.defaultValue;
-    if (value && !moment.isMoment(value)) {
-      throw new Error(
-        'The value/defaultValue of TimePicker must be a moment object after `antd@2.0`, ' +
-        'see: http://u.ant.design/time-picker-value'
-      );
-    }
-    this.state = {
-      value,
+  styles?: {
+    root?: React.CSSProperties;
+    prefix?: React.CSSProperties;
+    input?: React.CSSProperties;
+    suffix?: React.CSSProperties;
+    popup?: {
+      root?: React.CSSProperties;
+      content?: React.CSSProperties;
+      item?: React.CSSProperties;
+      footer?: React.CSSProperties;
+      container?: React.CSSProperties;
     };
-  }
+  };
+};
 
-  componentWillReceiveProps(nextProps) {
-    if ('value' in nextProps) {
-      this.setState({ value: nextProps.value });
-    }
-  }
+export type TimePickerSemanticAllType = GenerateSemantic<TimePickerSemanticType, TimePickerProps>;
 
-  handleChange = (value: moment.Moment) => {
-    if (!('value' in this.props)) {
-      this.setState({ value });
-    }
-    const { onChange, format = 'HH:mm:ss' } = this.props;
-    if (onChange) {
-      onChange(value, (value && value.format(format)) || '');
-    }
-  }
+export type PickerTimeProps<DateType extends AnyObject> = PickerPropsWithMultiple<
+  DateType,
+  GenericTimePickerProps<DateType>
+>;
 
-  getLocale() {
-    const antLocale = this.context.antLocale;
-    const timePickerLocale = (antLocale && antLocale.TimePicker) || defaultLocale;
-    return timePickerLocale;
-  }
+export type RangePickerTimeProps<DateType extends AnyObject> = Omit<
+  RangePickerProps<DateType>,
+  'showTime' | 'picker'
+>;
 
-  render() {
-    const props = assign({ format: 'HH:mm:ss' }, this.props);
-    delete props.defaultValue;
+const { TimePicker: InternalTimePicker, RangePicker: InternalRangePicker } = DatePicker;
 
-    const className = classNames(props.className, {
-      [`${props.prefixCls}-${props.size}`]: !!props.size,
-    });
-
-    const addon = (panel) => (
-      props.addon ? (
-        <div className={`${props.prefixCls}-panel-addon`}>
-          {props.addon(panel)}
-        </div>
-      ) : null
-    );
-
-    return (
-      <RcTimePicker
-        {...props}
-        className={className}
-        value={this.state.value}
-        placeholder={props.placeholder || this.getLocale().placeholder}
-        showHour={props.format.indexOf('HH') > -1}
-        showMinute={props.format.indexOf('mm') > -1}
-        showSecond={props.format.indexOf('ss') > -1}
-        onChange={this.handleChange}
-        addon={addon}
-      />
-    );
-  }
+export interface TimePickerLocale {
+  placeholder?: string;
+  rangePlaceholder?: [string, string];
 }
+
+export interface TimeRangePickerProps extends Omit<RangePickerTimeProps<Dayjs>, 'picker'> {
+  /** @deprecated Please use `classNames.popup` instead */
+  popupClassName?: string;
+  /** @deprecated Please use `styles.popup` instead */
+  popupStyle?: React.CSSProperties;
+}
+
+const RangePicker = React.forwardRef<PickerRef, TimeRangePickerProps>((props, ref) => (
+  <InternalRangePicker {...props} picker="time" mode={undefined} ref={ref} />
+));
+
+export interface TimePickerProps
+  extends Omit<PickerTimeProps<Dayjs>, 'picker' | 'classNames' | 'styles'> {
+  addon?: () => React.ReactNode;
+  status?: InputStatus;
+  /** @deprecated Please use `classNames.popup` instead */
+  popupClassName?: string;
+  /** @deprecated Please use `styles.popup` instead */
+  popupStyle?: React.CSSProperties;
+  rootClassName?: string;
+
+  classNames?: TimePickerSemanticAllType['classNamesAndFn'];
+  styles?: TimePickerSemanticAllType['stylesAndFn'];
+}
+
+const TimePicker = React.forwardRef<PickerRef, TimePickerProps>((props, ref) => {
+  const {
+    addon,
+    renderExtraFooter,
+    variant,
+    bordered,
+    classNames,
+    styles,
+    popupClassName,
+    popupStyle,
+    ...restProps
+  } = props;
+  // ====================== Warning =======================
+  if (process.env.NODE_ENV !== 'production') {
+    const warning = devUseWarning('TimePicker');
+
+    warning.deprecated(!addon, 'addon', 'renderExtraFooter');
+  }
+
+  const [mergedVariant] = useVariant('timePicker', variant, bordered);
+
+  const internalRenderExtraFooter = React.useMemo<TimePickerProps['renderExtraFooter']>(() => {
+    if (renderExtraFooter) {
+      return renderExtraFooter;
+    }
+
+    if (addon) {
+      return addon;
+    }
+    return undefined;
+  }, [addon, renderExtraFooter]);
+  // =========== Merged Props for Semantic ===========
+  const mergedProps: TimePickerProps = {
+    ...props,
+    variant: mergedVariant,
+  };
+  // =========== Merged Semantic ===========
+  const [mergedClassNames, mergedStyles] = useMergedPickerSemantic(
+    'timePicker',
+    classNames,
+    styles,
+    popupClassName,
+    popupStyle,
+    mergedProps,
+  ) as [
+    NonNullable<TimePickerSemanticAllType['classNames']>,
+    NonNullable<TimePickerSemanticAllType['styles']>,
+  ];
+
+  return (
+    <InternalTimePicker
+      {...restProps}
+      mode={undefined}
+      ref={ref}
+      renderExtraFooter={internalRenderExtraFooter}
+      variant={mergedVariant}
+      classNames={mergedClassNames}
+      styles={mergedStyles}
+    />
+  );
+});
+
+if (process.env.NODE_ENV !== 'production') {
+  TimePicker.displayName = 'TimePicker';
+}
+
+// We don't care debug panel
+/* istanbul ignore next */
+const PurePanel = genPurePanel(TimePicker, 'popupAlign', undefined, 'picker');
+(TimePicker as MergedTimePicker)._InternalPanelDoNotUseOrYouWillBeFired = PurePanel;
+
+type MergedTimePicker = typeof TimePicker & {
+  RangePicker: typeof RangePicker;
+  _InternalPanelDoNotUseOrYouWillBeFired: typeof PurePanel;
+};
+
+(TimePicker as MergedTimePicker).RangePicker = RangePicker;
+(TimePicker as MergedTimePicker)._InternalPanelDoNotUseOrYouWillBeFired = PurePanel;
+
+export default TimePicker as MergedTimePicker;

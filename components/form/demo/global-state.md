@@ -1,82 +1,15 @@
----
-order: 8
-title:
-  zh-CN: 表单数据存储于上层组件
-  en-US: Store Form Data into Upper Component
----
-
 ## zh-CN
 
-通过使用 `onFieldsChange` 与 `mapPropsToFields`，可以把表单的数据存储到上层组件或者 [Redux](https://github.com/reactjs/redux)、[dva](https://github.com/dvajs/dva) 中。
+通过 `onFieldsChange` 和 `fields`，可以把表单的数据存储到上层组件或者 [Redux](https://github.com/reactjs/redux)、[dva](https://github.com/dvajs/dva) 中，更多可参考 [rc-field-form 示例](https://rc-field-form.react-component.now.sh/?selectedKind=rc-field-form&selectedStory=StateForm-redux&full=0&addons=1&stories=1&panelRight=0&addonPanel=storybook%2Factions%2Factions-panel)。
+
+`onFieldsChange` 返回扁平的 `FieldData[]`。当字段名为数组路径时，`FieldData.name` 会保留该路径，而不是转换为嵌套对象，便于在外部状态中逐项处理字段。
+
+**注意：** 将表单数据存储于外部容器[并非好的实践](https://github.com/reduxjs/redux/issues/1287#issuecomment-175351978)，如无必要请避免使用。
 
 ## en-US
 
-We can store form data into upper component or [Redux](https://github.com/reactjs/redux) or [dva](https://github.com/dvajs/dva) by using `onFieldsChange` and `mapPropsToFields`.
+We can store form data into upper component or [Redux](https://github.com/reactjs/redux) or [dva](https://github.com/dvajs/dva) by using `onFieldsChange` and `fields`, see more at this [rc-field-form demo](https://rc-field-form.react-component.now.sh/?selectedKind=rc-field-form&selectedStory=StateForm-redux&full=0&addons=1&stories=1&panelRight=0&addonPanel=storybook%2Factions%2Factions-panel).
 
-````jsx
-import { Form, Input } from 'antd';
-const FormItem = Form.Item;
+`onFieldsChange` returns a flat `FieldData[]`. When a field uses an array name path, `FieldData.name` keeps that path instead of converting it into a nested object, making it easier to process each field entry in the external state.
 
-const CustomizedForm = Form.create({
-  onFieldsChange(props, changedFields) {
-    props.onChange(changedFields);
-  },
-  mapPropsToFields(props) {
-    return {
-      username: {
-        ...props.username,
-        value: props.username.value.toUpperCase(),
-      },
-    };
-  },
-})((props) => {
-  const { getFieldDecorator } = props.form;
-  return (
-    <Form inline>
-      <FormItem label="Username">
-        {getFieldDecorator('username', {
-          rules: [{ required: true, message: 'Username is required!' }],
-        })(<Input />)}
-      </FormItem>
-    </Form>
-  );
-});
-
-const Demo = React.createClass({
-  getInitialState() {
-    return {
-      fields: {
-        username: {
-          value: 'benjycui',
-        },
-      },
-    };
-  },
-  handleFormChange(changedFields) {
-    this.setState({
-      fields: { ...this.state.fields, ...changedFields },
-    });
-  },
-  render() {
-    const fields = this.state.fields;
-    return (
-      <div>
-        <CustomizedForm {...fields} onChange={this.handleFormChange} />
-        <pre className="language-bash">
-          {JSON.stringify(fields, null, 2)}
-        </pre>
-      </div>
-    );
-  },
-});
-
-ReactDOM.render(<Demo />, mountNode);
-````
-
-<style>
-#components-form-demo-global-state .language-bash {
-  max-width: 400px;
-  border-radius: 6px;
-  margin-top: 24px;
-}
-</style>
+**Note:** Saving form data globally [is not a good practice](https://github.com/reduxjs/redux/issues/1287#issuecomment-175351978). You should avoid this if not necessary.

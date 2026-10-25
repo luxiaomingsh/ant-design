@@ -1,71 +1,165 @@
 ---
 category: Components
-cols: 1
-type: Navigation
+group: Navigation
 title: Menu
+description: A versatile menu for navigation.
+cover: https://mdn.alipayobjects.com/huamei_7uahnr/afts/img/A*KeyQQL5iKkkAAAAAAAAAAAAADrJ8AQ/original
+coverDark: https://mdn.alipayobjects.com/huamei_7uahnr/afts/img/A*Vn4XSqJFAxcAAAAAAAAAAAAADrJ8AQ/original
 ---
-
-Menu list of Navigation.
 
 ## When To Use
 
-Navigation menu is important for a website, it helps users jump from one site section to another quickly. Mostly, it includes top navigation and side navigation. Top navigation provides all the category and functions of the website. Side navigation provides the Multi-level structure of the website.
+Navigation is an important part of any website, as a good navigation setup allows users to move around the site quickly and efficiently. Ant Design offers two navigation options: top and side. Top navigation provides all the categories and functions of the website. Side navigation provides the multi-level structure of the website.
 
-More layout and samples: [layout](/docs/spec/layout).
+More layouts with navigation: [Layout](/components/layout).
 
-```html
-<Menu>
-  <Menu.Item>Menu</Menu.Item>
-  <SubMenu title="SubMenu">
-    <Menu.Item>SubMenuItem</Menu.Item>
-  </SubMenu>
-</Menu>
-```
+## Notes for developers
+
+- Menu is rendered as a `ul` element, so it only supports [`li` and `script-supporting` elements](https://html.spec.whatwg.org/multipage/grouping-content.html#the-ul-element) as children nodes. Your customized node should be wrapped by `Menu.Item`.
+- Menu needs to collect its node structure, so its children should be `Menu.*` or encapsulated HOCs.
+
+## Examples
+
+<!-- prettier-ignore -->
+<code src="./demo/horizontal.tsx">Top Navigation</code>
+<code src="./demo/horizontal-dark.tsx" debug>Top Navigation (dark)</code>
+<code src="./demo/inline.tsx">Inline menu</code>
+<code src="./demo/inline-collapsed.tsx">Collapsed inline menu</code>
+<code src="./demo/tooltip.tsx">Menu tooltip</code>
+<code src="./demo/sider-current.tsx">Open current submenu only</code>
+<code src="./demo/vertical.tsx">Vertical menu</code>
+<code src="./demo/theme.tsx">Menu Themes</code>
+<code src="./demo/submenu-theme.tsx">Sub-menu theme</code>
+<code src="./demo/switch-mode.tsx">Switch the menu type</code>
+<code src="./demo/style-class.tsx" version="6.0.0">Custom semantic dom styling</code>
+<code src="./demo/style-debug.tsx" debug>Style debug</code>
+<code src="./demo/menu-v4.tsx" debug>Menu v4</code>
+<code src="./demo/component-token.tsx" debug>Component Token</code>
+<code src="./demo/extra-style.tsx" debug>Extra Style debug</code>
+<code src="./demo/extra-collapsed-debug.tsx" debug>Extra collapsed debug</code>
+<code src="./demo/custom-popup-render.tsx">Custom Submenu Render</code>
+<code src="./demo/collapsed-icon-debug.tsx" debug>Collapsed menu icon alignment</code>
 
 ## API
 
-### Menu props
+Common props ref：[Common props](/docs/react/common-props)
 
-| Param    | Description   | Type     | Default value       |
-|----------|---------------|----------|--------------|
-| theme    | color of the theme | String: `light` `dark` | `light` |
-| mode | type of the menu; vertical, horizontal, and inline modes are supported | String: vertical horizontal inline | vertical |
-| selectedKeys | array with the keys of currently selected menu items | Array |      |
-| defaultSelectedKeys | array with the keys of default selected menu items | Array |      |
-| openKeys | array with the keys of currently opened sub menus | Array |  |
-| defaultOpenKeys | array with the keys of default opened sub menus |  |      |
-| onOpenChange | called when open/close sub menu | Function(openKeys: string[]) | noop |
-| onSelect | callback of the selected item | Function({ item, key, selectedKeys }) | none   |
-| onDeselect | callback of the deselected item, only supported for multiple mode | Function({ item, key, selectedKeys }) | - |
-| onClick | callback of the clicked menu item, params: {item, key, keyPath} | function | - |
-| style | style of the root node | Object | |
+### Menu
 
-> More options in [rc-menu](https://github.com/react-component/menu#api)
+| Property | Description | Type | Default | Version | [Global Config](/components/config-provider#component-config) |
+| --- | --- | --- | --- | --- | --- |
+| classNames | Customize class for each semantic structure inside the component. Supports object or function. | Record<[SemanticDOM](#semantic-dom), string> \| (info: { props }) => Record<[SemanticDOM](#semantic-dom), string> | - |  | 6.0.0 |
+| defaultOpenKeys | Array with the keys of default opened sub menus | string\[] | - |  | × |
+| defaultSelectedKeys | Array with the keys of default selected menu items | string\[] | - |  | × |
+| expandIcon | custom expand icon of submenu | ReactNode \| `(props: SubMenuProps & { isSubMenu: boolean }) => ReactNode` | - | 4.9.0 | 5.15.0 |
+| forceSubMenuRender | Render submenu into DOM before it becomes visible | boolean | false |  | × |
+| inlineCollapsed | Specifies the collapsed status when menu is inline mode | boolean | - |  | × |
+| inlineIndent | Indent (in pixels) of inline menu items on each level | number | 24 |  | × |
+| items | Menu item content | [ItemType\[\]](#itemtype) | - | 4.20.0 | × |
+| mode | Type of menu | `vertical` \| `horizontal` \| `inline` | `vertical` |  | × |
+| multiple | Allows selection of multiple items | boolean | false |  | × |
+| openKeys | Array with the keys of currently opened sub-menus | string\[] | - |  | × |
+| overflowedIndicator | Customized the ellipsis icon when menu is collapsed horizontally | ReactNode | `<EllipsisOutlined />` |  | × |
+| selectable | Allows selecting menu items | boolean | true |  | × |
+| selectedKeys | Array with the keys of currently selected menu items | string\[] | - |  | × |
+| styles | Customize inline style for each semantic structure inside the component. Supports object or function. | Record<[SemanticDOM](#semantic-dom), CSSProperties> \| (info: { props }) => Record<[SemanticDOM](#semantic-dom), CSSProperties> | - |  | 6.0.0 |
+| subMenuCloseDelay | Delay time to hide submenu when mouse leaves (in seconds) | number | 0.1 |  | × |
+| subMenuOpenDelay | Delay time to show submenu when mouse enters, (in seconds) | number | 0 |  | × |
+| tooltip | Config tooltip props for menu items in inline collapsed mode. Set to `false` to disable. | false \| TooltipProps | - | 6.3.0 | × |
+| theme | Color theme of the menu | `light` \| `dark` | `light` |  | × |
+| triggerSubMenuAction | Which action can trigger submenu open/close | `hover` \| `click` | `hover` |  | × |
+| onClick | Called when a menu item is clicked | function({ key, keyPath, domEvent, itemData }) | - |  | × |
+| onDeselect | Called when a menu item is deselected (multiple mode only) | function({ key, keyPath, selectedKeys, domEvent, itemData }) | - |  | × |
+| onOpenChange | Called when sub-menus are opened or closed | function(openKeys: string\[]) | - |  | × |
+| onSelect | Called when a menu item is selected | function({ key, keyPath, selectedKeys, domEvent, itemData }) | - |  | × |
+| popupRender | Custom popup renderer for submenu | (node: ReactElement, props: { item: SubMenuProps; keys: string[] }) => ReactNode | - |  | × |
 
-### Menu.Item props
+> More options in [@rc-component/menu](https://github.com/react-component/menu#api)
 
-| Param    | Description    | Type     | Default value       |
-|----------|----------------|----------|--------------|
-| disabled    | disabled or not | Boolean   |  false  |
-| key   | unique id of the menu item |  String |  |
+### ItemType
 
-### Menu.SubMenu props
+> type ItemType = [MenuItemType](#menuitemtype) | [SubMenuType](#submenutype) | [MenuItemGroupType](#menuitemgrouptype) | [MenuDividerType](#menudividertype);
 
-| Param    | Description    | Type     | Default value       |
-|----------|----------------|----------|--------------|
-| disabled    | disabled or not | Boolean   |  false  |
-| key   | unique id of the menu item |  String |  |
-| title    | title of the sub menu | String or React.Element   |    |
-| children | sub menus or sub menu items | (MenuItem or SubMenu)[] |  |
-| onTitleClick | callback of the clicked sub menu title | Function({ eventKey, domEvent }) |  |
+#### MenuItemType
 
-### Menu.ItemGroup props
+| Property | Description                          | Type      | Default | Version |
+| -------- | ------------------------------------ | --------- | ------- | ------- |
+| danger   | Display the danger style             | boolean   | false   |         |
+| disabled | Whether menu item is disabled        | boolean   | false   |         |
+| extra    | The extra of the menu item           | ReactNode | -       | 5.21.0  |
+| icon     | The icon of the menu item            | ReactNode | -       |         |
+| key      | Unique ID of the menu item           | string    | -       |         |
+| label    | Menu label                           | ReactNode | -       |         |
+| title    | Set display title for collapsed item | string    | -       |         |
 
-| Param    | Description    | Type     | Default value       |
-|----------|----------------|----------|--------------|
-| title    | title of the group       | String or React.Element |    |
-| children | sub menu items    | MenuItem[] |  |
+#### SubMenuType
 
-### Menu.Divider
+<!-- prettier-ignore -->
+| Property | Description | Type | Default | Version |
+| --- | --- | --- | --- | --- |
+| children | Sub-menus or sub-menu items | [ItemType\[\]](#itemtype) | - |  |
+| disabled | Whether sub-menu is disabled | boolean | false |  |
+| icon | Icon of sub menu | ReactNode | - |  |
+| key | Unique ID of the sub-menu | string | - |  |
+| label | Menu label | ReactNode | - |  |
+| popupClassName | Sub-menu class name, not working when `mode="inline"` | string | - |  |
+| popupOffset | Sub-menu offset, not working when `mode="inline"` | \[number, number] | - |  |
+| theme | Color theme of the SubMenu (inherits from Menu by default) | `light` \| `dark` | - |  |
+| onTitleClick | Callback executed when the sub-menu title is clicked | function({ key, domEvent }) | - |  |
+| popupRender | Custom popup renderer for current sub-menu | (node: ReactElement, props: { item: SubMenuProps; keys: string[] }) => ReactNode | - |  |
 
-divider line in between menu items, only used in vertical popup Menu or Dropdown Menu.
+#### MenuItemGroupType
+
+Define `type` as `group` to make as group:
+
+```ts
+const groupItem = {
+  type: 'group', // Must have
+  label: 'My Group',
+  children: [],
+};
+```
+
+| Property | Description            | Type                              | Default | Version |
+| -------- | ---------------------- | --------------------------------- | ------- | ------- |
+| children | Sub-menu items         | [MenuItemType\[\]](#menuitemtype) | -       |         |
+| label    | The title of the group | ReactNode                         | -       |         |
+
+#### MenuDividerType
+
+Divider line in between menu items, only used in vertical popup Menu or Dropdown Menu. Need define the `type` as `divider`：
+
+```ts
+const dividerItem = {
+  type: 'divider', // Must have
+};
+```
+
+| Property | Description            | Type    | Default | Version |
+| -------- | ---------------------- | ------- | ------- | ------- |
+| dashed   | Whether line is dashed | boolean | false   |         |
+
+## FAQ
+
+### Why will Menu's children be rendered twice? {#faq-render-twice}
+
+Menu collects structure info with [twice-render](https://github.com/react-component/menu/blob/f4684514096d6b7123339cbe72e7b0f68db0bce2/src/Menu.tsx#L543) to support HOC usage. Merging into one render may cause the logic to become much more complex. Contributions to help improve the collection logic are welcomed.
+
+### Why Menu do not responsive collapse in Flex layout? {#faq-flex-layout}
+
+Menu will render fully item in flex layout and then collapse it. You need tell flex not consider Menu width to enable responsive ([online demo](https://codesandbox.io/s/ding-bu-dao-hang-antd-4-21-7-forked-5e3imy?file=/demo.js)):
+
+```jsx
+<div style={{ flex }}>
+  <div style={{ ... }}>Some Content</div>
+  <Menu style={{ minWidth: 0, flex: "auto" }} />
+</div>
+```
+
+## Semantic DOM
+
+<code src="./demo/_semantic.tsx" simplify="true"></code>
+
+## Design Token
+
+<ComponentTokenTable component="Menu"></ComponentTokenTable>

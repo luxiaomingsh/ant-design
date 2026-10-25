@@ -1,73 +1,42 @@
-import React from 'react';
-import moment from 'moment';
-import assign from 'object-assign';
-import RcCalendar from 'rc-calendar';
-import MonthCalendar from 'rc-calendar/lib/MonthCalendar';
-import createPicker from './createPicker';
-import wrapPicker from './wrapPicker';
-import RangePicker from './RangePicker';
-import Calendar from './Calendar';
-import { TimePickerProps } from '../time-picker';
+import dayjsGenerateConfig from '@rc-component/picker/generate/dayjs';
+import type { Dayjs } from 'dayjs';
 
-export interface PickerProps {
-  prefixCls?: string;
-  inputPrefixCls?: string;
-  format?: string;
-  disabled?: boolean;
-  allowClear?: boolean;
-  style?: React.CSSProperties;
-  popupStyle?: React.CSSProperties;
-  locale?: any;
-  size?: 'large' | 'small' | 'default';
-  getCalendarContainer?: (trigger: any) => React.ReactNode;
-  open?: boolean;
-  onOpenChange?: (status: boolean) => void;
-}
+import genPurePanel from '../_util/PurePanel';
+import generatePicker from './generatePicker';
+import type {
+  RangePickerProps as BaseRangePickerProps,
+  DatePickerSemanticType,
+  PickerProps,
+  PickerPropsWithMultiple,
+} from './generatePicker/interface';
 
-export interface SinglePickerProps {
-  value?: moment.Moment;
-  defaultValue?: moment.Moment;
-  defaultPickerValue?: moment.Moment;
-  onChange?: (date: moment.Moment, dateString: string) => void;
-}
+export type DatePickerProps<
+  ValueType = Dayjs,
+  IsMultiple extends boolean = boolean,
+> = PickerPropsWithMultiple<Dayjs, PickerProps<Dayjs>, ValueType, IsMultiple>;
+export type MonthPickerProps<ValueType = Dayjs | Dayjs> = Omit<
+  DatePickerProps<ValueType>,
+  'picker'
+>;
+export type WeekPickerProps<ValueType = Dayjs | Dayjs> = Omit<DatePickerProps<ValueType>, 'picker'>;
+export type RangePickerProps = BaseRangePickerProps<Dayjs>;
 
-export interface DatePickerProps extends PickerProps, SinglePickerProps {
-  showTime?: TimePickerProps | boolean;
-  showToday?: boolean;
-  open?: boolean;
-  toggleOpen?: (e: {open: boolean}) => void;
-  disabledDate?: (current: moment.Moment) => boolean;
-  onOpenChange?: (status: boolean) => void;
-  placeholder?: string;
-}
-const DatePicker = wrapPicker(createPicker(RcCalendar)) as React.ClassicComponentClass<DatePickerProps>;
+export type { DatePickerSemanticType };
 
-export interface MonthPickerProps extends PickerProps, SinglePickerProps {
-  disabledDate?: (current: moment.Moment) => boolean;
-  placeholder?: string;
-}
-const MonthPicker = wrapPicker(createPicker(MonthCalendar), 'YYYY-MM');
+const DatePicker = generatePicker<Dayjs>(dayjsGenerateConfig);
 
-export interface RangePickerProps extends PickerProps {
-  value?: [moment.Moment, moment.Moment];
-  defaultValue?: [moment.Moment, moment.Moment];
-  defaultPickerValue?: [moment.Moment, moment.Moment];
-  onChange?: (dates: [moment.Moment, moment.Moment], dateStrings: [string, string]) => void;
-  showTime?: TimePickerProps | boolean;
-  ranges?: {
-    [range: string]: moment.Moment[],
-  };
-}
+export type DatePickerType = typeof DatePicker & {
+  _InternalPanelDoNotUseOrYouWillBeFired: typeof PurePanel;
+  _InternalRangePanelDoNotUseOrYouWillBeFired: typeof PureRangePanel;
+  generatePicker: typeof generatePicker;
+};
 
-assign(DatePicker, {
-  RangePicker: wrapPicker(RangePicker),
-  Calendar,
-  MonthPicker,
-});
+// We don't care debug panel
+/* istanbul ignore next */
+const PurePanel = genPurePanel(DatePicker, 'popupAlign', undefined, 'picker');
+(DatePicker as DatePickerType)._InternalPanelDoNotUseOrYouWillBeFired = PurePanel;
+const PureRangePanel = genPurePanel(DatePicker.RangePicker, 'popupAlign', undefined, 'picker');
+(DatePicker as DatePickerType)._InternalRangePanelDoNotUseOrYouWillBeFired = PureRangePanel;
+(DatePicker as DatePickerType).generatePicker = generatePicker;
 
-export interface DatePickerDecorator extends React.ClassicComponentClass<DatePickerProps> {
-  RangePicker: React.ClassicComponentClass<RangePickerProps>;
-  MonthPicker: React.ClassicComponentClass<MonthPickerProps>;
-}
-
-export default DatePicker as DatePickerDecorator;
+export default DatePicker as DatePickerType;

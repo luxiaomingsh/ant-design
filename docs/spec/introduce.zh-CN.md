@@ -1,47 +1,70 @@
 ---
+group:
+  title: Ant Design
+  order: 0
 order: 0
-title: Ant Design
+title: 介绍
 ---
 
-<div style="text-align:center;background:#FBFBFB;margin:40px 0;">
-  <img width="600" src="https://os.alipayobjects.com/rmsportal/mgesTPFxodmIwpi.png">
+<div style="text-align:center;margin:40px 0;">
+  <img src="https://gw.alipayobjects.com/mdn/rms_08e378/afts/img/A*P0S-QIRUbsUAAAAAAAAAAABkARQnAQ">
 </div>
 
-在中台产品的研发过程中，会出现不同的设计规范和实现方式，但其中往往存在很多类似的页面和组件，给设计师和工程师带来很多困扰和重复建设，大大降低了产品的研发效率。我们（蚂蚁金服体验技术部）经过大量的项目实践和总结，沉淀出一个中台设计语言 Ant Design。旨在统一中台项目的前端 UI 设计，屏蔽不必要的设计差异和实现成本，解放设计和前端的研发资源。
+蚂蚁集团的企业级产品是一个庞大且复杂的系统，数量多且功能复杂，而且变动和并发频繁，常常需要设计者与开发者能快速做出响应。同时这类产品中存在很多类似的页面以及组件，我们可以通过抽象得到一些稳定且高复用性的内容。
 
-Ant Design 是一个致力于提升『用户』和『设计者』使用体验的中台设计语言。它模糊了产品经理、交互设计师、视觉设计师、前端工程师、开发工程师等角色边界，将进行 UE 设计和 UI 设计人员统称为『设计者』，利用统一的规范进行设计赋能，全面提高中台产品体验和研发效率。
+随着商业化的趋势，越来越多的企业级产品对更好的用户体验有了进一步的要求。带着这样的一个终极目标，我们（蚂蚁集团体验技术部）经过大量项目实践和总结，逐步打磨出一个服务于企业级产品的设计体系 —— Ant Design。基于「自然」、「确定性」、「意义感」、「生长性」四大[设计价值观](/docs/spec/values)，通过模块化解决方案，降低冗余的生产成本，让设计者专注于更好的用户体验。
 
 ---
 
-## 设计资源
+## 设计资源 {#guidelines-and-resources}
 
-我们提供完善的设计原则、最佳实践和设计资源文件（Sketch 和 Axure），来帮助业务快速设计出高质量的产品原型。
+我们提供完善的设计指引、最佳实践、设计资源和设计工具，来帮助设计者快速产出高质量产品原型。
 
-- [设计原则](/docs/spec/principle)
-- [设计模式](/docs/pattern/navigation)
-- [设计资源](/docs/resource/download)
+- [设计价值观](/docs/spec/values)
+- [设计模式](/docs/spec/overview)
+- [可视化](/docs/spec/visual)
+- [插画](/docs/spec/illustration)
+- [设计资源](/docs/resources)
+- [Sketch 工具集](https://kitchen.alipay.com/)
+- [文章](/docs/resources#articles)
 
-## 前端实现
+## 前端实现 {#front-end-implementation}
 
-我们采用 [React](http://facebook.github.io/react/) 封装了一套 Ant Design 的组件库，也欢迎社区其他框架的实现版本。
+我们采用 [React](https://zh-hans.react.dev/) 封装了一套 Ant Design 的组件库，也欢迎社区其他框架的实现版本。
 
 - [Ant Design of React](/docs/react/introduce)（官方实现）
-- <div class="outside-link"><a href="https://github.com/iview/iview/" target="_blank">iView (vue)</a></div>
-- <div class="outside-link"><a href="https://github.com/FE-Driver/vue-beauty" target="_blank">vue-beauty</a></div>
-- <div class="outside-link internal"><a href="http://naza.alibaba.net" target="_blank">Ant Design of Angular 2.0</a></div>
-- <div class="outside-link internal"><a href="http://atui.alibaba.net" target="_blank">ATUI (vue)</a></div>
-- <div class="outside-link"><a href="https://github.com/idcos/antd-ember" target="_blank">antd-ember</a></div>
+- [NG-ZORRO - Ant Design of Angular](http://ng.ant.design)（社区实现）
+- [NG-ZORRO-MOBILE - Ant Design Mobile of Angular](http://ng.mobile.ant.design)（社区实现）
+- [Ant Design of Vue](http://antdv.com)（社区实现）
+- [Ant Design Vue Next](https://www.antdv-next.com)（社区实现）
+- [Ant Design Blazor](https://antblazor.com/)（社区实现）
+- [San UI Toolkit for Ant Design](https://ecomfe.github.io/santd)（社区实现）
+- [antizer (ClojureScript)](https://github.com/priornix/antizer)（社区实现）
+- [AtomUI - Ant Design of Avalonia/.NET](https://github.com/atomui/atomui)（社区实现）
 
-## 谁在使用
+## 谁在使用 {#whos-using-ant-design}
 
-- [蚂蚁金服](http://www.antgroup.com/)
-- [阿里巴巴](http://www.alibaba.com/)
-- [口碑](http://www.koubei.com/)
-- [美团](http://www.meituan.com)
-- [滴滴](http://www.xiaojukeji.com/)
+- [蚂蚁集团](https://www.antgroup.com/)
+- [阿里巴巴](https://www.alibaba.com/)
+- [腾讯](https://www.tencent.com)
+- [百度](https://www.baidu.com)
+- [口碑](https://www.koubei.com/)
+- [美团](https://www.meituan.com)
+- [滴滴](https://www.xiaojukeji.com/)
+- [饿了么](https://www.ele.me/)
+- [其他用户](https://github.com/ant-design/ant-design/issues/477)
 
 > 如果你的公司和产品使用了 Ant Design，欢迎到 [这里](https://github.com/ant-design/ant-design/issues/477) 留言。
 
-## 如何贡献
+## 社区评价 {#words-from-community}
 
-我们欢迎任何形式的贡献，有任何建议或意见，请给我们 [提问](https://github.com/ant-design/ant-design/issues)。
+- 知乎：[如何评价 Ant Design 这个项目？](https://www.zhihu.com/question/33629737)
+- Hacknews: [Show HN: Antd – A set of high-quality React components](https://news.ycombinator.com/item?id=13053137)
+- Alligator: [Crafting Beautiful UIs in React Using Ant Design](https://alligator.io/react/beautiful-uis-ant-design/)
+- [漫谈 Material Design & Ant Design](http://dwbbb.com/blog/MaterialDesignAntDesign/)
+- [Introduction to Ant Design](https://blog.logrocket.com/introduction-to-ant-design/)
+- [Build a React App with Ant Design Principles](https://developer.okta.com/blog/2020/09/16/ant-design-react-app)
+
+## 如何贡献 {#how-to-contribute}
+
+我们欢迎任何形式的贡献，有任何建议或意见，请给我们 [提问](https://github.com/ant-design/ant-design/discussions)。

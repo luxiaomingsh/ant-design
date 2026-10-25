@@ -1,183 +1,109 @@
 ---
-order: 1
+group:
+  title: Basic Usage
+  order: 0
+order: 0
 title: Getting Started
 ---
 
-Ant Design React is dedicated to providing a **good development experience** for programmers.
+Ant Design React is dedicated to providing a **good development experience** for programmers. Before starting, it is recommended to learn [React](https://react.dev) first, and correctly install and configure [Node.js](https://nodejs.org/) v16 or above.
+
+The official guide also assumes that you have intermediate knowledge about HTML, CSS, and JavaScript, and React. If you are just starting to learn front-end or React, it may not be the best idea to use the UI framework as your first step.
+
+Finally, if you are working in a local development environment, please refer to [Scaffolding Guide](/docs/react/use-with-vite) to create a new project.
 
 ---
 
-Before delving into Ant Design React, a good knowledge of [React](http://facebook.github.io/react/) and [JavaScript ES2015](http://babeljs.io/docs/learn-es2015/) is needed.
+## Your First Example {#first-example}
 
-## First Example
+Here is a simple online CodeSandbox demo of an Ant Design component to show the usage of Ant Design React.
 
-The following CodePen demo is the simplest usage case, and it's also a good habit to fork this demo to provide a re-producible demo while reporting a bug. Please don't use this demo as a scaffold in real world.
+<!-- prettier-ignore -->
+<code src="./_demo/first-example.tsx">First Example</code>
 
-- [antd CodePen](http://codepen.io/anon/pen/wGOWGW?editors=001)
+Follow the steps below to play around with Ant Design yourself:
 
-## Standard Development Flow
+### 1. Create a CodeSandbox {#create-codesandbox}
 
-During development, you may need to compile and debug JSX and ES2015 code, and even proxy some of the request to mocked data or some external services. And all of these to be done with a quick feedback provided through hot reloading of changes.
+Visit https://u.ant.design/reproduce to create a CodeSandbox -- don't forget to press the save button as well to create a new instance.
 
-Such features, together with packaging the production version are covered in this work flow.
+### 2. Use and modify an antd component {#use-antd-component}
 
-### 1. Installation
+If you are working in a local React project, install `antd` first. The CodeSandbox created above already includes this dependency.
 
-> Please make sure that you had installed [Node.js](https://nodejs.org/en/)(> v4.x) before using `antd-init`.
+<InstallDependencies npm='$ npm install antd --save' yarn='$ yarn add antd' pnpm='$ pnpm install antd --save' bun='$ bun add antd'></InstallDependencies>
 
-```bash
-$ npm install antd-init -g
-```
-
-Read [the documentation of `antd-init`](https://github.com/ant-design/antd-init/) and [the documentation of `ant-tool`](http://ant-tool.github.io/) to explore more features.
-
-> Also, you can use scaffold/demo which is provided by community:
->
->   - [reactSPA](https://github.com/JasonBai007/reactSPA)
->   - [react-redux-antd by Justin-lu](https://github.com/Justin-lu/react-redux-antd)
->   - [react-redux-antd by okoala](https://github.com/okoala/react-redux-antd)
->   - [react-antd-admin](https://github.com/fireyy/react-antd-admin)
->   - [react-antd-redux-router-starter](https://github.com/yuzhouisme/react-antd-redux-router-starter)
->   - [react-redux-antd-starter](https://github.com/BetaRabbit/react-redux-antd-starter)
->   - [more](https://github.com/ant-design/ant-design/issues/129)
-
-### 2. Create a New Project
-
-A new project can be created using CLI tools.
-
-```bash
-$ mkdir antd-demo && cd antd-demo
-$ antd-init
-```
-
-`antd-init` will run `npm install` after a project is created. If it fails, you can run `npm install` by yourself.
-
-### 3. Use antd's Components
-
-By default, besides the scaffolding needed to start the development, a fully working Todo application is created.
-You may study this example later. For now, just follow this guide in order to get some experience working with the result of `antd-init`.
-
-Replace the content of `index.js` with the following code.
-As you can see, there is no difference between antd's components and usual React components.
+Then replace the contents of your application's entry file (for example, `src/main.jsx`) with the following code. As you can see, there is no difference between antd's components and typical React components.
 
 ```jsx
-import React from 'react';
-import ReactDOM from 'react-dom';
+import React, { useState } from 'react';
 import { DatePicker, message } from 'antd';
+import { createRoot } from 'react-dom/client';
 
-class App extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      date: '',
-    };
-  }
-  handleChange(date) {
-    message.info('Selected Date: ' + date.toString());
-    this.setState({ date });
-  }
-  render() {
-    return (
-      <div style={{ width: 400, margin: '100px auto' }}>
-        <DatePicker onChange={value => this.handleChange(value)} />
-        <div style={{ marginTop: 20 }}>Date: {this.state.date.toString()}</div>
+import './index.css';
+
+const App = () => {
+  const [date, setDate] = useState(null);
+  const [messageApi, contextHolder] = message.useMessage();
+  const handleChange = (value) => {
+    messageApi.info(`Selected Date: ${value ? value.format('YYYY-MM-DD') : 'None'}`);
+    setDate(value);
+  };
+  return (
+    <div style={{ width: 400, margin: '100px auto' }}>
+      <DatePicker onChange={handleChange} />
+      <div style={{ marginTop: 16 }}>
+        Selected Date: {date ? date.format('YYYY-MM-DD') : 'None'}
       </div>
-    );
-  }
-}
+      {contextHolder}
+    </div>
+  );
+};
 
-ReactDOM.render(<App />, document.getElementById('root'));
+createRoot(document.getElementById('root')).render(<App />);
 ```
 
-> All the components in antd are listed in the sidebar.
+### 3. Explore more components {#explore-components}
 
-### 4. Development & Debugging
+You can view the list of components in the side menu of the Components page, such as the [Alert](/components/alert) component. Plenty of examples are also provided in the component pages and API documentation as well.
 
-Run your project and visit http://127.0.0.1:8000
+Click the "Show Code" icon in the first example to expand the source code. Then import the `Alert` component into the previous CodeSandbox:
 
-```bash
-$ npm start
+```diff
+- import { DatePicker, message } from 'antd';
++ import { DatePicker, message, Alert } from 'antd';
 ```
 
-### 5. Building & Deployment
+Now add the following JSX inside the `App` component.
 
-```bash
-$ npm run build
+```diff
+  <DatePicker onChange={handleChange} />
+  <div style={{ marginTop: 16 }}>
+-   Selected Date: {date ? date.format('YYYY-MM-DD') : 'None'}
++   <Alert title="Selected Date" description={date ? date.format('YYYY-MM-DD') : 'None'} />
+  </div>
 ```
 
-Entry files will be built and generated in `dist` directory, then we can deploy it to different environments.
+Select a date, and you can see the effect in the preview area on the right:
 
-> This guide is designed to help you to understand how to use antd, so it may not be similar to what you do in the real world.
-> But you can use those tools in your project, depending on your context and needs.
+<img width="420" src="https://gw.alipayobjects.com/zos/antfincdn/JrXptUm1Nz/6b50edc4-3a3c-4b2a-843e-f9f0af2c4667.png" alt="CodeSandbox screenshot" />
 
-## Compatibility
+OK! Now that you know the basics of using antd components, you are welcome to explore more components in the CodeSandbox. When reporting a bug with Ant Design, we also strongly recommend using CodeSandbox to provide a reproducible demo as well.
 
-Ant Design React supports all the modern browsers and IE9+.
+### 4. Next Steps {#next-steps}
 
-You need to provide [es5-shim](https://github.com/es-shims/es5-shim) and [es6-shim](https://github.com/paulmillr/es6-shim) and other polyfills for IE browsers. If you are using babel, we strongly recommend to use [babel-polyfill](https://babeljs.io/docs/usage/polyfill/) and [babel-plugin-transform-runtime](https://babeljs.io/docs/plugins/transform-runtime/).
+During actual real-world project development, you will most likely need a development workflow consisting of `compile/build/deploy/lint/debug/` deployment. You can read the following documents on the subject or use the following scaffolds and examples provided below:
 
-```html
-<!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="utf-8">
-    <!-- import stylesheet -->
-    <link rel="stylesheet" href="/index.css">
-    <!-- Polyfills -->
-    <!--[if lt IE 10]>
-    <script src="https://as.alipayobjects.com/g/component/??console-polyfill/0.2.2/index.js,es5-shim/4.5.7/es5-shim.min.js,es5-shim/4.5.7/es5-sham.min.js,es6-shim/0.35.1/es6-sham.min.js,es6-shim/0.35.1/es6-shim.min.js,html5shiv/3.7.2/html5shiv.min.js,media-match/2.0.2/media.match.min.js"></script>
-    <![endif]-->
-    <!--[if lte IE 11]>
-    <script src="https://as.alipayobjects.com/g/component/??es6-shim/0.35.1/es6-sham.min.js,es6-shim/0.35.1/es6-shim.min.js"></script>
-    <![endif]-->
-  </head>
-  <body>
-  </body>
-  <!-- import common dependencies -->
-  <script src="/common.js"></script>
-  <!-- import entry file -->
-  <script src="/index.js"></script>
-</html>
-```
+- [Ant Design Pro](https://pro.ant.design/)
+- [create-next-app](https://github.com/ant-design/ant-design-examples/tree/main/examples/with-nextjs-inline-style)
+- More scaffolds at [Scaffold Market](https://scaffold.ant.design/)
 
-#### IE8 note
+## Import on Demand {#import-on-demand}
 
-> We don't support IE8 after `antd@2.0`.
+`antd` supports tree shaking of ES modules, so using `import { Button } from 'antd';` would drop js code you didn't use.
 
-You may encounter problems like [#28](https://github.com/ant-tool/atool-build/issues/28) and [#858](https://github.com/ant-design/ant-design/issues/858), since `babel@6.x` doesn't support IE8. You can refer to this [webpack config](https://github.com/ant-design/antd-init/blob/f5fb9479ca973fade51fd6754e50f8b3fafbb1df/boilerplate/webpack.config.js#L4-L8).
+## Customize your Workflow {#customize-workflow}
 
-> More about how to use React in IE8: https://github.com/xcatliu/react-ie8
+If you want to customize your workflow, we recommend using [webpack](https://webpack.js.org) or [Vite](https://vite.dev/) to build and debug code. You can try out plenty of [boilerplates](https://github.com/enaqx/awesome-react#react-tools) available in the React ecosystem.
 
-## Customized Work Flow
-
-If you want to customize your work flow, we recommend to use [webpack](http://webpack.github.io/) to build and debug code.
-
-Also, you can use any [scaffold](https://github.com/enaqx/awesome-react#boilerplates) available in React ecosystem. If you encounter problems, you can use our [webpack config](https://github.com/ant-tool/atool-build/blob/master/src/getWebpackCommonConfig.js) and [modify it](http://ant-tool.github.io/webpack-config.html).
-
-There are some [scaffolds](https://github.com/ant-design/ant-design/issues/129) which have already integrated antd, so you can try and start with one of these, and even contribute.
-
-## Import on Demand
-
-If we import a component like this `import { Button } from 'antd';`, then all the components of antd will be imported. But, we can import component on demand:
-
-```jsx
-import Button from 'antd/lib/button';
-```
-
-If you use `babel`, we recommend to use [babel-plugin-import](https://github.com/ant-design/babel-plugin-import). This plugin will convert the following code to the above form:
-
-```jsx
-import { Button } from 'antd';
-```
-
-And this plugin can also load styles on demand. See the [usage](https://github.com/ant-design/babel-plugin-import#usage) for further details.
-
-## Customization
-
-- [Customize Theme](/docs/react/customize-theme)
-- [Local Iconfont](https://github.com/ant-design/antd-init/tree/master/examples/local-iconfont)
-
-## Tips
-
-- You can use any `npm` modules.
-- We recommend to write code in [ES2015](http://babeljs.io/blog/2015/06/07/react-on-es6-plus) as `babel` has been integrated in our work flow.
+There are also some [scaffolds](https://scaffold.ant.design/) which have already been integrated into antd, so you can try and start with one of these and even contribute.

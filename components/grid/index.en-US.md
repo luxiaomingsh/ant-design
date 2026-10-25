@@ -1,106 +1,94 @@
 ---
 category: Components
-type: Layout
-cols: 1
+group: Layout
 title: Grid
+description: 24 Grids System.
+cover: https://mdn.alipayobjects.com/huamei_7uahnr/afts/img/A*mfJeS6cqZrEAAAAAAAAAAAAADrJ8AQ/original
+coverDark: https://mdn.alipayobjects.com/huamei_7uahnr/afts/img/A*DLUwQ4B2_zQAAAAAAAAAAAAADrJ8AQ/original
 ---
-
-24 Grids System。
 
 ## Design concept
 
 <div class="grid-demo">
-<div class="ant-row demo-row">
-  <div class="ant-col-24 demo-col demo-col-1">
-    100%
-  </div>
-</div>
-<div class="ant-row demo-row">
-  <div class="ant-col-6 demo-col demo-col-2">
-    25%
-  </div>
-  <div class="ant-col-6 demo-col demo-col-3">
-    25%
-  </div>
-  <div class="ant-col-6 demo-col demo-col-2">
-    25%
-  </div>
-  <div class="ant-col-6 demo-col demo-col-3">
-    25%
-  </div>
-</div>
-<div class="ant-row demo-row">
-  <div class="ant-col-8 demo-col demo-col-4">
-    33.33%
-  </div>
-  <div class="ant-col-8 demo-col demo-col-5">
-    33.33%
-  </div>
-  <div class="ant-col-8 demo-col demo-col-4">
-    33.33%
-  </div>
-</div>
-<div class="ant-row demo-row">
-  <div class="ant-col-12 demo-col demo-col-1">
-    50%
-  </div>
-  <div class="ant-col-12 demo-col demo-col-3">
-    50%
-  </div>
-</div>
-<div class="ant-row demo-row">
-  <div class="ant-col-16 demo-col demo-col-4">
-    66.66%
-  </div>
-  <div class="ant-col-8 demo-col demo-col-5">
-    33.33%
-  </div>
-</div>
+  <img draggable="false" src="https://gw.alipayobjects.com/zos/bmw-prod/9189c9ef-c601-40dc-9960-c11dbb681888.svg" alt="grid design" />
 </div>
 
-In most business situations,Ant Design need solve a lot of information storage problems within the design area,so based on 12 Grids System,we divided the design area into 24 aliquots.
+In most business situations, Ant Design needs to solve a lot of information storage problems within the design area, so based on 12 Grids System, we divided the design area into 24 sections.
 
-We name the divided area as 'box'.We suggest that four boxes horizontal arrangement at most, one at least.Box on the proportion of the entire screen as above picture.To ensure that the level of visual comfort,we custom typography inside of the box based on the box unit.
+We name the divided area 'box'. We suggest four boxes for horizontal arrangement at most, one at least. Boxes are proportional to the entire screen as shown in the picture above. To ensure a high level of visual comfort, we customize the typography inside of the box based on the box unit.
 
-## Outline
+## Outline {#overview}
 
-In the grid system, we define the frame outside the information area based on row and column, to ensure that every area can steady arrangement.
+In the grid system, we define the frame outside the information area based on `row` and `column`, to ensure that every area can have stable arrangement.
 
 Following is a brief look at how it works:
 
-* To establish a set of `column` in the horizontal direction by` row` (abbreviated col)
-* Direct your content elements should be placed in the `col`, and only` col` as the `row`
-* The column grid system is a value of 1-24 to represent its range spans.For example, three columns of equal width can be created by `.col-8`.
-* If a `row` sum of` col` more than 24, then the extra `col` as a whole will start a new line arrangement.
+- Establish a set of `column` in the horizontal space defined by `row` (abbreviated col).
+- Your content elements should be placed directly in the `col`, and only `col` should be placed directly in `row`.
+- The column grid system is a value of 1-24 to represent its range spans. For example, three columns of equal width can be created by `<Col span={8} />`.
+- If the sum of `col` spans in a `row` are more than 24, then the overflowing `col` as a whole will start a new line arrangement.
 
-## Flex layout
+Our grid systems base on Flex layout to allow the elements within the parent to be aligned horizontally - left, center, right, wide arrangement, and decentralized arrangement. The Grid system also supports vertical alignment - top aligned, vertically centered, bottom-aligned. You can also define the order of elements by using `order`.
 
-Our grid systems support Flex layout to allow the child elements within the parent horizontal alignment - Left, center, right of abode, and other wide arrangement, decentralized arrangement. Between sub-elements and sub-elements, support the top of the aligned vertically centered, bottom-aligned manner. At the same time, you can define the order of elements by using 'order'.
+Layout uses a 24 grid layout to define the width of each "box", but does not rigidly adhere to the grid layout.
 
-Flex layout is based on a grid 24 to define each "box" in width, but not rigidly adhere to the grid layout.
+## Examples
+
+<!-- prettier-ignore -->
+<code src="./demo/basic.tsx">Basic Grid</code>
+<code src="./demo/gutter.tsx">Grid Gutter</code>
+<code src="./demo/offset.tsx">Column offset</code>
+<code src="./demo/sort.tsx">Grid sort</code>
+<code src="./demo/flex.tsx">Typesetting</code>
+<code src="./demo/flex-align.tsx">Alignment</code>
+<code src="./demo/flex-order.tsx">Order</code>
+<code src="./demo/flex-stretch.tsx">Flex Stretch</code>
+<code src="./demo/responsive.tsx">Responsive</code>
+<code src="./demo/responsive-flex.tsx" version="5.14.0">Flex Responsive</code>
+<code src="./demo/responsive-more.tsx">More responsive</code>
+<code src="./demo/playground.tsx">Playground</code>
+<code src="./demo/useBreakpoint.tsx">useBreakpoint Hook</code>
 
 ## API
 
-Ant Design layout component if it can not meet your needs, you can use the excellent layout of the components of the community:
+Common props ref：[Common props](/docs/react/common-props)
 
-- [react-flexbox-grid](http://roylee0704.github.io/react-flexbox-grid/)
-- [react-blocks](http://whoisandie.github.io/react-blocks/)
+If the Ant Design grid layout component does not meet your needs, you can use the excellent layout components of the community:
+
+- [react-flexbox-grid](https://roylee0704.github.io/react-flexbox-grid/)
+- [react-blocks](https://github.com/whoisandy/react-blocks/)
 
 ### Row
 
-| Member        | Explanation             | Type               | Default       |
-|------------|-----------------|--------------------|-------------|
-| gutter     | grid spacing   | number | 0        |
-| type     | layout mode, the optional `flex`, effective modern browser | string |         |
-| align     | the vertical alignment of the layout of flex: `top` ` middle` `bottom`  | string | `top`      |
-| justify   | horizontal arrangement of the layout of flex: `start` ` end` `center` ` space-around` `space-between`   | string | `start`        |
+| Property | Description | Type | Default | Version | [Global Config](/components/config-provider#component-config) |
+| --- | --- | --- | --- | --- | --- |
+| align | Vertical alignment | `top` \| `middle` \| `bottom` \| `stretch` \| `{[key in 'xs' \| 'sm' \| 'md' \| 'lg' \| 'xl' \| 'xxl' \| 'xxxl']: 'top' \| 'middle' \| 'bottom' \| 'stretch'}` | `top` | object: 4.24.0 | × |
+| gutter | Spacing between grids, could be a [string CSS units](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Values_and_Units) or a object like { xs: 8, sm: 16, md: 24}. Or you can use array to make horizontal and vertical spacing work at the same time `[horizontal, vertical]` | number \| string \| object \| array | 0 | string: 5.28.0 | × |
+| justify | Horizontal arrangement | `start` \| `end` \| `center` \| `space-around` \| `space-between` \| `space-evenly` \| `{[key in 'xs' \| 'sm' \| 'md' \| 'lg' \| 'xl' \| 'xxl' \| 'xxxl']: 'start' \| 'end' \| 'center' \| 'space-around' \| 'space-between' \| 'space-evenly'}` | `start` | object: 4.24.0 | × |
+| wrap | Auto wrap line | boolean | true | 4.8.0 | × |
 
 ### Col
 
-| Member        | Explanation             | Type               | Default       |
-|------------|-----------------|--------------------|-------------|
-| span     | raster occupying the number of cells,0 corresponds to `display: none`  | number | none        |
-| order     | raster order, under `flex` effective layout mode   | number | 0        |
-| offset     | the number of cells to the left of the grid spacing, no cell in grid spacing  | number | 0        |
-| push     | the number of cells that raster move to the right | number | 0        |
-| pull     | the number of cells that raster move to the left   | number | 0        |
+| Property | Description | Type | Default | Version | [Global Config](/components/config-provider#component-config) |
+| --- | --- | --- | --- | --- | --- |
+| flex | Flex layout style. Number for 'flex: n n auto', string is applied directly (e.g. pure number string 'n' for 'flex: n 1 0') | string \| number | - |  | × |
+| offset | The number of cells to offset Col from the left | number | 0 |  | × |
+| order | Raster order | number | 0 |  | × |
+| pull | The number of cells that raster is moved to the left | number | 0 |  | × |
+| push | The number of cells that raster is moved to the right | number | 0 |  | × |
+| span | Raster number of cells to occupy, 0 corresponds to `display: none` | number | - |  | × |
+| xs | `screen < 576px` and also default setting, could be a `span` value or an object containing above props | number \| object | - |  | × |
+| sm | `screen ≥ 576px`, could be a `span` value or an object containing above props | number \| object | - |  | × |
+| md | `screen ≥ 768px`, could be a `span` value or an object containing above props | number \| object | - |  | × |
+| lg | `screen ≥ 992px`, could be a `span` value or an object containing above props | number \| object | - |  | × |
+| xl | `screen ≥ 1200px`, could be a `span` value or an object containing above props | number \| object | - |  | × |
+| xxl | `screen ≥ 1600px`, could be a `span` value or an object containing above props | number \| object | - |  | × |
+| xxxl | `screen ≥ 1920px`, could be a `span` value or an object containing above props | number \| object | - | 6.3.0 | × |
+
+You can modify breakpoint values by customizing `screen[XS|SM|MD|LG|XL|XXL|XXXL]` with [theme customization](/docs/react/customize-theme) (since 5.1.0, [sandbox demo](https://codesandbox.io/s/antd-reproduction-template-forked-dlq3r9?file=/index.js)).
+
+The breakpoints of responsive grid follow [BootStrap 4 media queries rules](https://getbootstrap.com/docs/4.0/layout/overview/#responsive-breakpoints) (not including `occasionally part`).
+
+## Design Token
+
+<ComponentTokenTable component="Grid"></ComponentTokenTable>

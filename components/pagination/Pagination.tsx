@@ -1,87 +1,329 @@
-import React from 'react';
-import RcPagination from 'rc-pagination';
+import * as React from 'react';
+import DoubleLeftOutlined from '@ant-design/icons/DoubleLeftOutlined';
+import DoubleRightOutlined from '@ant-design/icons/DoubleRightOutlined';
+import EllipsisOutlined from '@ant-design/icons/EllipsisOutlined';
+import LeftOutlined from '@ant-design/icons/LeftOutlined';
+import RightOutlined from '@ant-design/icons/RightOutlined';
+import type {
+  PaginationLocale,
+  PaginationProps as RcPaginationProps,
+} from '@rc-component/pagination';
+import RcPagination from '@rc-component/pagination';
+import enUS from '@rc-component/pagination/locale/en_US';
+import { clsx } from 'clsx';
+
+import { useMergeSemantic, useSemanticRootStyle } from '../_util/hooks/useMergeSemantic';
+import type { GenerateSemantic } from '../_util/hooks/useMergeSemantic/semanticType';
+import { devUseWarning } from '../_util/warning';
+import { useComponentConfig } from '../config-provider/context';
+import useSize from '../config-provider/hooks/useSize';
+import type { SizeType } from '../config-provider/SizeContext';
+import useVariant from '../form/hooks/useVariants';
+import useBreakpoint from '../grid/hooks/useBreakpoint';
+import { useLocale } from '../locale';
+import type { SelectProps } from '../select';
 import Select from '../select';
-import MiniSelect from './MiniSelect';
-import zhCN from './locale/zh_CN';
+import { useToken } from '../theme/internal';
+import useStyle from './style';
+import BorderedStyle from './style/bordered';
+import useShowSizeChanger from './useShowSizeChanger';
 
-export interface PaginationProps {
-  /** 当前页数*/
-  current?: number;
-  /** 默认的当前页数*/
-  defaultCurrent?: number;
-  /** 数据总数*/
-  total: number;
-  /** 初始的每页条数*/
-  defaultPageSize?: number;
-  /** 每页条数*/
-  pageSize?: number;
-  /** 页码改变的回调，参数是改变后的页码*/
-  onChange?: (page: number) => void;
-  /** 是否可以改变 pageSize */
-  showSizeChanger?: boolean;
-  /** 指定每页可以显示多少条*/
-  pageSizeOptions?: Array<string>;
-  /** pageSize 变化的回调  */
-  onShowSizeChange?: (current: number, size: number) => void;
-  /** 是否可以快速跳转至某页*/
-  showQuickJumper?: boolean;
-  /** 当为「small」时，是小尺寸分页 */
-  size?: string;
-  /** 当添加该属性时，显示为简单分页*/
-  simple?: Object;
-  /** 用于显示总共有多少条数据*/
-  showTotal?: (total: number) => React.ReactNode;
-  style?: React.CSSProperties;
-  className?: string;
-  locale?: Object;
-  prefixCls?: string;
-  selectPrefixCls?: string;
+export type PaginationSemanticType = {
+  classNames?: {
+    root?: string;
+    item?: string;
+  };
+  styles?: {
+    root?: React.CSSProperties;
+    item?: React.CSSProperties;
+  };
+};
+
+export type PaginationSemanticAllType = GenerateSemantic<PaginationSemanticType, PaginationProps>;
+
+export interface PaginationProps
+  extends Omit<
+    RcPaginationProps,
+    'showSizeChanger' | 'pageSizeOptions' | 'classNames' | 'styles' | 'sizeChangerRender'
+  > {
+  showQuickJumper?: boolean | { goButton?: React.ReactNode };
+  size?: SizeType;
+  responsive?: boolean;
+  role?: string;
+  totalBoundaryShowSizeChanger?: number;
+  rootClassName?: string;
+  components?: {
+    sizeChanger?: React.ComponentType<{
+      value: number;
+      onChange: (value: number) => void;
+      disabled: boolean;
+      className: string;
+    }>;
+  };
+  showSizeChanger?: boolean | SelectProps;
+  /** @deprecated Not official support. Will be removed in next major version. */
+  selectComponentClass?: any;
+  /** `string` type will be removed in next major version. */
+  pageSizeOptions?: (string | number)[];
+  classNames?: PaginationSemanticAllType['classNamesAndFn'];
+  styles?: PaginationSemanticAllType['stylesAndFn'];
 }
 
-export interface PaginationContext {
-  antLocale?: {
-    Pagination?: any,
-  };
+export type PaginationPosition = 'top' | 'bottom' | 'both';
+
+export interface PaginationConfig extends Omit<PaginationProps, 'rootClassName'> {
+  position?: PaginationPosition;
 }
 
-export default class Pagination extends React.Component<PaginationProps, any> {
-  static defaultProps = {
-    locale: zhCN,
-    className: '',
-    prefixCls: 'ant-pagination',
-    selectPrefixCls: 'ant-select',
+export type { PaginationLocale };
+
+const Pagination: React.FC<PaginationProps> = (props) => {
+  const {
+    align,
+    prefixCls: customizePrefixCls,
+    selectPrefixCls: customizeSelectPrefixCls,
+    className,
+    rootClassName,
+    style,
+    size: customizeSize,
+    locale: customLocale,
+    responsive,
+    showSizeChanger,
+    components,
+    selectComponentClass,
+    pageSizeOptions,
+    styles,
+    classNames,
+    ...restProps
+  } = props;
+  const { xs } = useBreakpoint(responsive);
+  const [, token] = useToken();
+
+  const {
+    getPrefixCls,
+    direction,
+    showSizeChanger: contextShowSizeChangerConfig,
+    className: contextClassName,
+    style: contextStyle,
+    classNames: contextClassNames,
+    styles: contextStyles,
+    totalBoundaryShowSizeChanger: contextTotalBoundaryShowSizeChanger,
+  } = useComponentConfig('pagination');
+  const prefixCls = getPrefixCls('pagination', customizePrefixCls);
+
+  // Style
+  const [hashId, cssVarCls] = useStyle(prefixCls);
+
+  // ============================== Size ==============================
+  const mergedSize = useSize(customizeSize);
+
+  const isSmall = mergedSize === 'small' || !!(xs && !mergedSize && responsive);
+  const [inputVariant, enableInputVariantCls] = useVariant('input');
+
+  // =========== Merged Props for Semantic ==========
+  const mergedProps: PaginationProps = {
+    ...props,
+    size: mergedSize,
   };
 
-  static contextTypes = {
-    antLocale: React.PropTypes.object,
-  };
+  // ========================= Style ==========================
+  const contextStyleRoot = useSemanticRootStyle(contextStyle);
+  const styleRoot = useSemanticRootStyle(style);
 
-  context: PaginationContext;
+  const [mergedClassNames, mergedStyles] = useMergeSemantic<
+    PaginationSemanticAllType['classNames'],
+    PaginationSemanticAllType['styles'],
+    PaginationProps
+  >([contextClassNames, classNames], [contextStyles, contextStyleRoot, styles, styleRoot], {
+    props: mergedProps,
+  });
 
-  render() {
-    let className = this.props.className;
-    let selectComponentClass = Select as React.ReactNode;
+  // ============================= Locale =============================
+  const [contextLocale] = useLocale('Pagination', enUS);
 
-    let locale;
-    if (this.context.antLocale && this.context.antLocale.Pagination) {
-      locale = this.context.antLocale.Pagination;
-    } else {
-      locale = this.props.locale;
+  const locale = { ...contextLocale, ...customLocale };
+
+  // ========================== Size Changer ==========================
+  // Merge the props showSizeChanger
+  const [propShowSizeChanger, propSizeChangerSelectProps] = useShowSizeChanger(showSizeChanger);
+  const [contextShowSizeChanger, contextSizeChangerSelectProps] = useShowSizeChanger(
+    contextShowSizeChangerConfig,
+  );
+
+  const mergedShowSizeChanger = propShowSizeChanger ?? contextShowSizeChanger;
+  const mergedShowSizeChangerSelectProps =
+    propSizeChangerSelectProps ?? contextSizeChangerSelectProps;
+
+  const SizeChanger: typeof Select = selectComponentClass || Select;
+
+  // Generate options
+  const mergedPageSizeOptions = React.useMemo(() => {
+    return pageSizeOptions ? pageSizeOptions.map<number>(Number) : undefined;
+  }, [pageSizeOptions]);
+
+  // Render size changer
+  const sizeChangerRender: RcPaginationProps['sizeChangerRender'] = (info) => {
+    const {
+      disabled,
+      size: pageSize,
+      onSizeChange,
+      'aria-label': ariaLabel,
+      className: sizeChangerClassName,
+      options,
+    } = info;
+
+    const SizeChangerComponent = components?.sizeChanger;
+    if (SizeChangerComponent) {
+      return (
+        <SizeChangerComponent
+          value={pageSize}
+          onChange={onSizeChange}
+          disabled={!!disabled}
+          className={sizeChangerClassName}
+        />
+      );
     }
 
-    if (this.props.size === 'small') {
-      className += ' mini';
-      selectComponentClass = MiniSelect;
-    }
+    const { className: propSizeChangerClassName, onChange: propSizeChangerOnChange } =
+      mergedShowSizeChangerSelectProps || {};
+
+    // Origin Select is using Select.Option,
+    // So it make the option value must be string
+    // Just for compatible
+    const selectedValue = options.find(
+      (option) => String(option.value) === String(pageSize),
+    )?.value;
 
     return (
-      <RcPagination
-        selectComponentClass={selectComponentClass}
-        selectPrefixCls={this.props.selectPrefixCls}
-        {...this.props}
-        locale={locale}
-        className={className}
+      <SizeChanger
+        disabled={disabled}
+        showSearch
+        popupMatchSelectWidth={false}
+        getPopupContainer={(triggerNode) => triggerNode.parentNode}
+        aria-label={ariaLabel}
+        options={options}
+        {...mergedShowSizeChangerSelectProps}
+        value={selectedValue}
+        onChange={(nextSize, option) => {
+          onSizeChange?.(nextSize);
+          propSizeChangerOnChange?.(nextSize, option);
+        }}
+        size={mergedSize}
+        className={clsx(
+          `${prefixCls}-options-size-changer-select`,
+          sizeChangerClassName,
+          propSizeChangerClassName,
+        )}
       />
     );
+  };
+
+  if (process.env.NODE_ENV !== 'production') {
+    const warning = devUseWarning('Pagination');
+
+    warning(
+      !selectComponentClass,
+      'usage',
+      '`selectComponentClass` is not official api which will be removed.',
+    );
   }
+
+  // ============================= Render =============================
+  const iconsProps = React.useMemo<Record<PropertyKey, React.ReactNode>>(() => {
+    const ellipsis = (
+      <span className={`${prefixCls}-item-ellipsis`}>
+        <EllipsisOutlined />
+      </span>
+    );
+    const prevIcon = (
+      <button className={`${prefixCls}-item-link`} type="button" tabIndex={-1}>
+        {direction === 'rtl' ? <RightOutlined /> : <LeftOutlined />}
+      </button>
+    );
+    const nextIcon = (
+      <button className={`${prefixCls}-item-link`} type="button" tabIndex={-1}>
+        {direction === 'rtl' ? <LeftOutlined /> : <RightOutlined />}
+      </button>
+    );
+    const jumpPrevIcon = (
+      // biome-ignore lint/a11y/useValidAnchor: it is hard to refactor
+      <a className={`${prefixCls}-item-link`}>
+        <div className={`${prefixCls}-item-container`}>
+          {direction === 'rtl' ? (
+            <DoubleRightOutlined className={`${prefixCls}-item-link-icon`} />
+          ) : (
+            <DoubleLeftOutlined className={`${prefixCls}-item-link-icon`} />
+          )}
+          {ellipsis}
+        </div>
+      </a>
+    );
+    const jumpNextIcon = (
+      // biome-ignore lint/a11y/useValidAnchor: it is hard to refactor
+      <a className={`${prefixCls}-item-link`}>
+        <div className={`${prefixCls}-item-container`}>
+          {direction === 'rtl' ? (
+            <DoubleLeftOutlined className={`${prefixCls}-item-link-icon`} />
+          ) : (
+            <DoubleRightOutlined className={`${prefixCls}-item-link-icon`} />
+          )}
+          {ellipsis}
+        </div>
+      </a>
+    );
+    return { prevIcon, nextIcon, jumpPrevIcon, jumpNextIcon };
+  }, [direction, prefixCls]);
+
+  const selectPrefixCls = getPrefixCls('select', customizeSelectPrefixCls);
+
+  const extendedClassName = clsx(
+    {
+      [`${prefixCls}-${align}`]: !!align,
+      [`${prefixCls}-${mergedSize}`]: mergedSize,
+      [`${prefixCls}-${inputVariant}`]: enableInputVariantCls && inputVariant !== 'outlined',
+      /** @deprecated Should be removed in v7 */
+      [`${prefixCls}-mini`]: isSmall,
+      [`${prefixCls}-rtl`]: direction === 'rtl',
+      [`${prefixCls}-bordered`]: token.wireframe,
+    },
+    contextClassName,
+    className,
+    rootClassName,
+    mergedClassNames.root,
+    hashId,
+    cssVarCls,
+  );
+
+  const mergedStyle: React.CSSProperties = {
+    ...mergedStyles.root,
+  };
+
+  return (
+    <>
+      {token.wireframe && <BorderedStyle prefixCls={prefixCls} />}
+      <RcPagination
+        {...iconsProps}
+        {...restProps}
+        styles={mergedStyles}
+        classNames={mergedClassNames}
+        style={mergedStyle}
+        prefixCls={prefixCls}
+        selectPrefixCls={selectPrefixCls}
+        className={extendedClassName}
+        locale={locale}
+        pageSizeOptions={mergedPageSizeOptions}
+        showSizeChanger={mergedShowSizeChanger}
+        totalBoundaryShowSizeChanger={
+          restProps.totalBoundaryShowSizeChanger ?? contextTotalBoundaryShowSizeChanger
+        }
+        sizeChangerRender={sizeChangerRender}
+      />
+    </>
+  );
+};
+
+if (process.env.NODE_ENV !== 'production') {
+  Pagination.displayName = 'Pagination';
 }
+
+export default Pagination;

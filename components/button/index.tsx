@@ -1,5 +1,9 @@
-import Button from './button';
-import ButtonGroup from './button-group';
+import Button from './Button';
 
-Button.Group = ButtonGroup;
+export type { SizeType as ButtonSize } from '../config-provider/SizeContext';
+export type { ButtonProps } from './Button';
+export type { ButtonGroupProps } from './ButtonGroup';
+
+export * from './buttonHelpers';
+
 export default Button;

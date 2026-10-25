@@ -1,24 +1,79 @@
-import React from 'react';
-import classNames from 'classnames';
+import * as React from 'react';
+import { useContext, useMemo } from 'react';
+import { clsx } from 'clsx';
 
+import { devUseWarning } from '../_util/warning';
+import { ConfigContext } from '../config-provider';
+import type { FormItemStatusContextProps } from '../form/context';
+import { FormItemInputContext } from '../form/context';
+import Space from '../space';
+import useStyle from './style';
+
+/** @deprecated Please use `GetProps<typeof Input.Group>` instead. */
 export interface GroupProps {
   className?: string;
   size?: 'large' | 'small' | 'default';
-  children?: any;
+  children?: React.ReactNode;
   style?: React.CSSProperties;
+  onMouseEnter?: React.MouseEventHandler<HTMLSpanElement>;
+  onMouseLeave?: React.MouseEventHandler<HTMLSpanElement>;
+  onFocus?: React.FocusEventHandler<HTMLSpanElement>;
+  onBlur?: React.FocusEventHandler<HTMLSpanElement>;
   prefixCls?: string;
+  compact?: boolean;
 }
 
-const Group: React.StatelessComponent<GroupProps> = (props) => {
-  const { prefixCls = 'ant-input-group', className = '' } = props;
-  const cls = classNames(prefixCls, {
-    [`${prefixCls}-lg`]: props.size === 'large',
-    [`${prefixCls}-sm`]: props.size === 'small',
-  }, className);
+export interface InputGroupProps extends GroupProps {}
+
+/** @deprecated Please use `Space.Compact` */
+const Group: React.FC<InputGroupProps> = (props) => {
+  const { getPrefixCls, direction } = useContext(ConfigContext);
+  const { prefixCls: customizePrefixCls, className } = props;
+  const prefixCls = getPrefixCls('input-group', customizePrefixCls);
+  const inputPrefixCls = getPrefixCls('input');
+  const [hashId, cssVarCls] = useStyle(inputPrefixCls);
+  const cls = clsx(
+    prefixCls,
+    cssVarCls,
+    {
+      [`${prefixCls}-lg`]: props.size === 'large',
+      [`${prefixCls}-sm`]: props.size === 'small',
+      [`${prefixCls}-compact`]: props.compact,
+      [`${prefixCls}-rtl`]: direction === 'rtl',
+    },
+    hashId,
+    className,
+  );
+
+  const formItemContext = useContext(FormItemInputContext);
+
+  const groupFormItemContext = useMemo<FormItemStatusContextProps>(
+    () => ({
+      ...formItemContext,
+      isFormItemInput: false,
+    }),
+    [formItemContext],
+  );
+
+  if (process.env.NODE_ENV !== 'production') {
+    const warning = devUseWarning('Input.Group');
+
+    warning.deprecated(false, 'Input.Group', 'Space.Compact');
+  }
+
   return (
-    <span className={cls} style={props.style}>
-      {props.children}
-    </span>
+    <FormItemInputContext.Provider value={groupFormItemContext}>
+      <Space.Compact
+        className={cls}
+        style={props.style}
+        onMouseEnter={props.onMouseEnter}
+        onMouseLeave={props.onMouseLeave}
+        onFocus={props.onFocus}
+        onBlur={props.onBlur}
+      >
+        {props.children}
+      </Space.Compact>
+    </FormItemInputContext.Provider>
   );
 };
 

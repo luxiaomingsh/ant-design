@@ -1,57 +1,46 @@
-import React from 'react';
-import Icon from '../icon';
-import Input from '../input';
+import * as React from 'react';
+import SearchOutlined from '@ant-design/icons/SearchOutlined';
 
-export interface SearchProps {
+import Input from '../input/Input';
+
+export interface TransferSearchProps {
   prefixCls?: string;
   placeholder?: string;
-  onChange?: (e: React.FormEvent<any>) => void;
-  handleClear?: (e: React.MouseEvent<any>) => void;
-  value?: any;
+  onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  handleClear?: () => void;
+  value?: string;
+  disabled?: boolean;
 }
 
-export default class Search extends React.Component<SearchProps, any> {
-  static defaultProps = {
-    placeholder: '',
-  };
+const Search: React.FC<TransferSearchProps> = (props) => {
+  const { placeholder = '', value, prefixCls, disabled, onChange, handleClear } = props;
 
-  handleChange = (e) => {
-    const onChange = this.props.onChange;
-    if (onChange) {
-      onChange(e);
-    }
-  }
+  const handleChange = React.useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      if (e.type === 'click') {
+        handleClear?.();
+      } else {
+        onChange?.(e);
+      }
+    },
+    [onChange, handleClear],
+  );
 
-  handleClear = (e) => {
-    e.preventDefault();
+  return (
+    <Input
+      placeholder={placeholder}
+      className={prefixCls}
+      value={value}
+      onChange={handleChange}
+      disabled={disabled}
+      allowClear
+      prefix={<SearchOutlined />}
+    />
+  );
+};
 
-    const handleClear = this.props.handleClear;
-    if (handleClear) {
-      handleClear(e);
-    }
-  }
-
-  render() {
-    const { placeholder, value, prefixCls } = this.props;
-    const icon = (value && value.length > 0) ? (
-      <a href="#" className={`${prefixCls}-action`} onClick={this.handleClear}>
-        <Icon type="cross-circle" />
-      </a>
-    ) : (
-      <span className={`${prefixCls}-action`}><Icon type="search" /></span>
-    );
-
-    return (
-      <div>
-        <Input
-          placeholder={placeholder}
-          className={prefixCls}
-          value={value}
-          ref="input"
-          onChange={this.handleChange}
-        />
-        {icon}
-      </div>
-    );
-  }
+if (process.env.NODE_ENV !== 'production') {
+  Search.displayName = 'Search';
 }
+
+export default Search;
